@@ -23,7 +23,6 @@
       :data="dataTable()"
       :table-props="tableProps"
       style="width: 100%"
-      height="50vh"
       :pagination-props="{ pageSizes: [5, 10, 30, 50, 100] }"
     >
       <el-table-column
@@ -51,7 +50,6 @@
             @click.native.prevent="openFormEdit(scope.$index, scope.row)"
             type="primary"
             size="small"
-            :loading="false"
             >Sửa
           </el-button>
           <el-button
@@ -71,9 +69,144 @@
         </template>
       </el-table-column>
     </data-tables>
+    <el-dialog
+      title="Sửa thông tin sinh viên"
+      :visible.sync="formEditVisible"
+      :center="true"
+    >
+      <form
+        @submit.prevent="editUser()"
+        class="form-body"
+        id="form-edit"
+        :lock-scroll="false"
+      >
+        <div class="form-group">
+          <input
+            type="text"
+            required
+            :class="{ valid: dataEdit.mssv }"
+            v-model="dataEdit.mssv"
+          />
+          <label>
+            MSSV
+            <span class="required">*</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <input
+            type="text"
+            required
+            :class="{ valid: dataEdit.first_name }"
+            v-model="dataEdit.first_name"
+          />
+          <label>
+            Họ và tên lót
+            <span class="required">*</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <input
+            type="text"
+            required
+            :class="{ valid: dataEdit.last_name }"
+            v-model="dataEdit.last_name"
+          />
+          <label>
+            Tên
+            <span class="required">*</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <input
+            type="text"
+            :class="{ valid: dataEdit.phone_number }"
+            v-model="dataEdit.phone_number"
+          />
+          <label>
+            Số điện thoại
+          </label>
+        </div>
+        <div class="form-group">
+          <input
+            type="text"
+            required
+            :class="{ valid: dataEdit.address }"
+            v-model="dataEdit.address"
+          />
+          <label>
+            Địa chỉ
+            <span class="required">*</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <input
+            type="email"
+            :class="{ valid: dataEdit.email }"
+            v-model="dataEdit.email"
+          />
+          <label>
+            Email
+          </label>
+        </div>
+        <div class="group-row" style="margin-top: 20px">
+          <label class="title">
+            Giới tính:
+            <span class="required">*</span>
+          </label>
+          <el-radio-group
+            v-model="dataEdit.sex"
+            size="medium"
+            style="user-select: none;"
+          >
+            <el-radio-button label="0">Nam</el-radio-button>
+            <el-radio-button label="1">Nữ</el-radio-button>
+          </el-radio-group>
+        </div>
+        <div class="group-row block">
+          <label class="title">
+            Ngày sinh:
+            <span class="required">*</span>
+          </label>
+          <el-date-picker
+            v-model="dataEdit.birthday"
+            type="date"
+            placeholder="Chọn ngày sinh"
+          >
+          </el-date-picker>
+        </div>
+        <div class="group-row block">
+          <label class="title">
+            Kích hoạt:
+            <span class="required">*</span>
+          </label>
+          <el-switch
+            v-model="dataEdit.isActive"
+            active-color="#13ce66"
+            inactive-color="#ff4949"
+          >
+          </el-switch>
+        </div>
+        <div class="form-btn-group">
+          <button
+            class="btn btn-danger"
+            @click.prevent="formEditVisible = false"
+          >
+            Hủy
+          </button>
+          <button
+            class="btn btn-success"
+            style="margin-left: 15px"
+            @click="$customjs.clickBtnAnimation($event)"
+          >
+            Sửa sinh viên
+          </button>
+        </div>
+      </form>
+    </el-dialog>
   </div>
 </template>
 
+<!--suppress JSUnresolvedFunction -->
 <script>
 import apiStudent from "@/api/student.js";
 export default {
@@ -125,14 +258,58 @@ export default {
         }
       },
       search: "",
-      filterActive: "-1"
+      filterActive: "-1",
+      dataEdit: {
+        mssv: "",
+        first_name: "",
+        last_name: "",
+        phone_number: "",
+        address: "",
+        email: "",
+        sex: 0,
+        birthday: "",
+        isActive: 0
+      },
+      formEditVisible: false
     };
   },
   methods: {
-    openFormEdit(row, column) {
-      console.log("open form", row, column);
+    async editUser() {
+      await apiStudent
+        .editUser(
+          localStorage.getItem("token_user"),
+          this.dataEdit.id,
+          this.dataEdit
+        )
+        .then(res => {
+          if (res.data.status) {
+            this.$message({
+              message: res.data.message,
+              type: "success"
+            });
+            this.dataTables.forEach((value, index) => {
+              if (value.id === res.data.data.id) {
+                this.$set(this.dataTables, index, res.data.data);
+                return true;
+              }
+            });
+            this.formEditVisible = false;
+          } else {
+            this.$message.error(res.data.message);
+          }
+        })
+        .catch(() => {
+          this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+        });
     },
-    async lockStudent(event, row, column) {
+    openFormEdit(row, column) {
+      this.formEditVisible = true;
+      for (const columnKey in column) {
+        this.$set(this.dataEdit, columnKey, column[columnKey]);
+      }
+      this.dataEdit.isActive = this.dataEdit.isActive === 1;
+    },
+    async lockStudent(row, column) {
       await apiStudent
         .lockAccount(localStorage.getItem("token_user"), column.id)
         .then(res => {
@@ -158,7 +335,7 @@ export default {
           });
         });
     },
-    async unlockStudent(event, row, column) {
+    async unlockStudent(row, column) {
       await apiStudent
         .unlockAccount(localStorage.getItem("token_user"), column.id)
         .then(res => {
@@ -255,6 +432,17 @@ export default {
     display: flex;
     align-items: center;
     justify-content: flex-end;
+  }
+}
+.group-row {
+  margin-top: 18px;
+  .title {
+    font-weight: 500;
+    font-size: 16px;
+    margin-right: 16px;
+    .required {
+      color: red;
+    }
   }
 }
 </style>

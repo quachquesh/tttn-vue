@@ -53,5 +53,10 @@ export default {
         headers: { Authorization: "Bearer " + token }
       }
     );
+  },
+  editUser(token, studentId, dataEdit) {
+    return axios().put("/student/" + studentId, dataEdit, {
+      headers: { Authorization: "Bearer " + token }
+    });
   }
 };
