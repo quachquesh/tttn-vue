@@ -104,14 +104,18 @@
 <script>
 export default {
   created() {
-    this.$router.options.nprogress.done();
+    if (this.$store.state.USER.dataUser.role === "admin") {
+      this.$router.options.nprogress.done();
+    }
   }
 };
 </script>
 
 <style lang="scss" scoped>
 .form-navbar {
-  border-bottom: 1px solid var(--color-primary);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   .list-menu {
     list-style: none;
     display: flex;
@@ -124,6 +128,7 @@ export default {
       cursor: pointer;
       user-select: none;
       transition: linear 0.2s;
+      border-bottom: 1px solid var(--color-primary);
       &.active {
         color: #000;
         background-color: rgba(#1266f1, 0.3);

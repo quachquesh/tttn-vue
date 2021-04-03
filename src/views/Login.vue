@@ -1,87 +1,86 @@
 <template>
   <div id="login">
-    <div class="title-page">Đăng nhập</div>
     <transition name="slide-down" mode="out-in" appear>
-      <!-- GV -->
-      <form
-        class="form-box"
-        @submit.prevent="loginGV($event)"
-        :key="'form-GV'"
-        v-if="isActiveFormGV"
-      >
-        <div class="form-block">
-          <div class="form-group">
-            <input
-              type="email"
-              v-model="formGV.email"
-              @input="eventInput($event)"
-            />
-            <label>Email</label>
-          </div>
-          <div class="form-group">
-            <input
-              type="password"
-              v-model="formGV.password"
-              @input="eventInput($event)"
-            />
-            <label>Mật khẩu</label>
-          </div>
-          <div class="form-group mb-15">
-            <span class="error-msg">{{ formGV.msgError }}</span>
-          </div>
-          <div class="btn-group">
-            <span class="btn btn-link" @click="changeForm($event, false)"
-              >Sinh viên</span
-            >
-            <button
-              @click="$customjs.clickBtnAnimation($event)"
-              class="btn btn-success"
-            >
-              Đăng nhập
-            </button>
-          </div>
+      <div class="login-box">
+        <!-- GV -->
+        <div class="form-gv-box">
+          <form
+            class="form-box"
+            @submit.prevent="loginGV($event)"
+            :key="'form-GV'"
+          >
+            <div class="form-block">
+              <h3 class="form-title">Giảng viên</h3>
+              <div class="form-group">
+                <input
+                  type="email"
+                  v-model="formGV.email"
+                  @input="eventInput($event)"
+                />
+                <label>Email</label>
+              </div>
+              <div class="form-group">
+                <input
+                  type="password"
+                  v-model="formGV.password"
+                  @input="eventInput($event)"
+                />
+                <label>Mật khẩu</label>
+              </div>
+              <div class="form-group mb-15">
+                <span class="error-msg">{{ formGV.msgError }}</span>
+              </div>
+              <div class="btn-group">
+                <button
+                  @click="$customjs.clickBtnAnimation($event)"
+                  class="btn btn-success"
+                >
+                  Đăng nhập
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
-      </form>
-      <!-- Sinh viên -->
-      <form
-        class="form-box SV"
-        @submit.prevent="loginSV()"
-        :key="'form-SV'"
-        v-else
-      >
-        <div class="form-block">
-          <div class="form-group">
-            <input
-              type="text"
-              v-model="formSV.mssv"
-              @input="eventInput($event)"
-            />
-            <label>MSSV</label>
-          </div>
-          <div class="form-group">
-            <input
-              type="password"
-              v-model="formSV.password"
-              @input="eventInput($event)"
-            />
-            <label>Mật khẩu</label>
-          </div>
-          <div class="form-group mb-15">
-            <span class="error-msg">{{ formSV.msgError }}</span>
-          </div>
-          <div class="btn-group">
-            <span class="btn btn-link" @click="changeForm($event, true)"
-              >Giảng viên</span
-            >
-            <button
-              @click="$customjs.clickBtnAnimation($event)"
-              class="btn btn-primary"
-            >
-              Đăng nhập
-            </button>
-          </div>
+        <!-- Sinh viên -->
+        <div class="form-sv-box">
+          <form
+            class="form-box SV"
+            @submit.prevent="loginSV()"
+            :key="'form-SV'"
+          >
+            <div class="form-block">
+              <h3 class="form-title">Sinh viên</h3>
+              <div class="form-group">
+                <input
+                  type="text"
+                  v-model="formSV.mssv"
+                  @input="eventInput($event)"
+                />
+                <label>MSSV</label>
+              </div>
+              <div class="form-group">
+                <input
+                  type="password"
+                  v-model="formSV.password"
+                  @input="eventInput($event)"
+                />
+                <label>Mật khẩu</label>
+              </div>
+              <div class="form-group mb-15">
+                <span class="error-msg">{{ formSV.msgError }}</span>
+              </div>
+              <div class="btn-group">
+                <button
+                  @click="$customjs.clickBtnAnimation($event)"
+                  class="btn btn-primary"
+                >
+                  Đăng nhập
+                </button>
+              </div>
+            </div>
+          </form>
         </div>
-      </form>
+      </div>
     </transition>
   </div>
 </template>
@@ -92,7 +91,6 @@ import apiLecturer from "@/api/lecturer.js";
 export default {
   data: function() {
     return {
-      isActiveFormGV: true,
       formGV: {
         email: "",
         password: "",
@@ -148,19 +146,6 @@ export default {
       } else {
         event.target.parentElement.classList.remove("active");
       }
-    },
-    changeForm(event, status) {
-      this.$customjs.clickBtnAnimation(event);
-      this.isActiveFormGV = status;
-      if (status) {
-        this.formSV.mssv = "";
-        this.formSV.password = "";
-        this.formSV.msgError = "";
-      } else {
-        this.formGV.email = "";
-        this.formGV.password = "";
-        this.formGV.msgError = "";
-      }
     }
   },
   created() {
@@ -171,6 +156,12 @@ export default {
 </script>
 
 <style scoped lang="scss">
+.login-box {
+  display: flex;
+  justify-content: space-around;
+  align-items: start;
+  padding: 50px 350px 0;
+}
 .form-box {
   display: flex;
   width: 100%;
@@ -202,7 +193,6 @@ export default {
 @media (max-width: 739px) {
   #login {
     margin: 0 20px;
-
     .form-box {
       width: 100%;
       .form-block {
@@ -238,7 +228,7 @@ export default {
             margin-bottom: 10px;
 
             &:first-child {
-              margin-bottom: 0px;
+              margin-bottom: 0;
             }
           }
         }

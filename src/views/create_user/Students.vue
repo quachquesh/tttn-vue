@@ -23,8 +23,8 @@
       :data="dataTable()"
       :table-props="tableProps"
       style="width: 100%"
-      :pagination-props="{ pageSizes: [5, 10, 30, 50, 100] }"
     >
+      <!--      :pagination-props="{ pageSizes: [5, 10, 30, 50, 100] }"-->
       <el-table-column
         fixed
         prop="mssv"
@@ -56,14 +56,14 @@
             @click.native.prevent="lockStudent(scope.$index, scope.row)"
             type="danger"
             size="small"
-            v-if="scope.row.isActive"
+            v-if="scope.row.isActive == 1"
             >Khóa
           </el-button>
           <el-button
             @click.native.prevent="unlockStudent(scope.$index, scope.row)"
             type="success"
             size="small"
-            v-if="!scope.row.isActive"
+            v-else
             >Mở khóa
           </el-button>
         </template>
@@ -83,13 +83,23 @@
         <div class="form-group">
           <input
             type="text"
-            required
+            disabled
             :class="{ valid: dataEdit.mssv }"
             v-model="dataEdit.mssv"
           />
           <label>
             MSSV
             <span class="required">*</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <input
+            type="password"
+            :class="{ valid: dataEdit.password }"
+            v-model="dataEdit.password"
+          />
+          <label>
+            Mật khẩu mới
           </label>
         </div>
         <div class="form-group">
@@ -174,18 +184,6 @@
           >
           </el-date-picker>
         </div>
-        <div class="group-row block">
-          <label class="title">
-            Kích hoạt:
-            <span class="required">*</span>
-          </label>
-          <el-switch
-            v-model="dataEdit.isActive"
-            active-color="#13ce66"
-            inactive-color="#ff4949"
-          >
-          </el-switch>
-        </div>
         <div class="form-btn-group">
           <button
             class="btn btn-danger"
@@ -243,7 +241,7 @@ export default {
         {
           prop: "phone_number",
           label: "Điện thoại",
-          width: "200"
+          width: "130"
         }
       ],
       tableProps: {
@@ -267,8 +265,7 @@ export default {
         address: "",
         email: "",
         sex: 0,
-        birthday: "",
-        isActive: 0
+        birthday: ""
       },
       formEditVisible: false
     };
@@ -307,7 +304,7 @@ export default {
       for (const columnKey in column) {
         this.$set(this.dataEdit, columnKey, column[columnKey]);
       }
-      this.dataEdit.isActive = this.dataEdit.isActive === 1;
+      this.dataEdit.password = "";
     },
     async lockStudent(row, column) {
       await apiStudent
@@ -363,7 +360,7 @@ export default {
     },
     formatter(row, column) {
       if (column.property === "sex") {
-        if (row.sex === 0) {
+        if (row.sex == 0) {
           return "Nam";
         } else {
           return "Nữ";
@@ -399,6 +396,32 @@ export default {
       });
     }
   },
+  // async beforeCreate() {
+  //   if (this.$store.state.USER.dataUser.role === "admin") {
+  //     this.$router.options.nprogress.set(0.7);
+  //     await apiStudent
+  //       .getAllStudent(localStorage.getItem("token_user"))
+  //       .then(res => {
+  //         this.$set(this, "dataTables", res.data);
+  //       });
+  //     this.$router.options.nprogress.done();
+  //   } else {
+  //     // Trường hợp load lại trang
+  //     this.$store.dispatch("checkLogin").then(res => {
+  //       this.$router.options.nprogress.set(0.7);
+  //       if (res.role === "admin") {
+  //         apiStudent
+  //           .getAllStudent(localStorage.getItem("token_user"))
+  //           .then(res => {
+  //             this.$set(this, "dataTables", res.data);
+  //           });
+  //       } else {
+  //         this.$router.push("/");
+  //       }
+  //       this.$router.options.nprogress.done();
+  //     });
+  //   }
+  // }
   async beforeCreate() {
     this.$router.options.nprogress.set(0.7);
     await apiStudent

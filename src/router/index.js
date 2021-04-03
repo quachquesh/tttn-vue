@@ -1,6 +1,7 @@
 import Vue from "vue";
 import VueRouter from "vue-router";
 import NProgress from "vue-nprogress";
+import store from "../store";
 
 import Home from "../views/Home.vue";
 
@@ -13,6 +14,59 @@ nprogress.configure({
   speed: 300
 });
 
+const checkLogin = (to, from, next) => {
+  // Lần đầu load trang
+  if (store.getters.getUserId === null) {
+    store
+      .dispatch("checkLogin")
+      .then(() => {
+        next();
+      })
+      .catch(() => {
+        next({ name: "Login" });
+      });
+  } else {
+    // Chuyển router không load trang
+    if (store.getters.getIsLogin === true) {
+      next();
+    } else {
+      next({ name: "Login" });
+    }
+  }
+};
+
+const checkAdmin = (to, from, next) => {
+  // Nếu reload trang
+  if (store.getters.getUserId === null) {
+    store
+      .dispatch("checkLogin")
+      .then(res => {
+        if (res.role === "admin") {
+          next();
+        } else {
+          next("/");
+        }
+      })
+      .catch(() => {
+        next({ name: "Login" });
+      });
+  } else {
+    // Chuyển router không load trang
+    if (store.getters.getUserRole === "admin") {
+      next();
+    } else if (store.getters.getIsLogin === false) {
+      next({ name: "Login" });
+    } else {
+      next("/");
+    }
+  }
+};
+
+function loadView(view) {
+  return () =>
+    import(/* webpackChunkName: "view-[request]" */ `@/views/${view}`);
+}
+
 const routes = [
   {
     path: "/",
@@ -21,19 +75,14 @@ const routes = [
       transition: "slide-right",
       title: "Danh sách môn học"
     },
+    beforeEnter: checkLogin,
     children: [
       {
         path: "",
         name: "Home",
         components: {
-          default: () =>
-            import(
-              /* webpackChunkName: "ListSubject" */ "../views/ListSubject.vue"
-            ),
-          ListClassRoom: () =>
-            import(
-              /* webpackChunkName: "ListClassRoom" */ "../views/ListClassRoom.vue"
-            )
+          default: loadView("ListSubject.vue"),
+          ListClassRoom: loadView("ListClassRoom.vue")
         }
       }
     ]
@@ -46,8 +95,7 @@ const routes = [
       transition: "slide-left",
       title: "Đăng nhập"
     },
-    component: () =>
-      import(/* webpackChunkName: "Login" */ "../views/Login.vue")
+    component: loadView("Login.vue")
   },
   {
     path: "/mh/:subjectId",
@@ -56,28 +104,24 @@ const routes = [
       transition: "slide-left",
       title: "Danh sách lớp học"
     },
-    component: () =>
-      import(
-        /* webpackChunkName: "ListClassRoom" */ "../views/ListClassRoom.vue"
-      )
+    component: loadView("ListClassRoom.vue"),
+    props: true,
+    beforeEnter: checkLogin
   },
   {
     path: "/c/:roomId",
-    component: () =>
-      import(/* webpackChunkName: "ClassRoom" */ "../views/ClassRoom.vue"),
+    component: loadView("ClassRoom.vue"),
     meta: {
       transition: "slide-down",
       title: "Lớp học"
     },
+    beforeEnter: checkLogin,
     props: true,
     children: [
       {
         path: "",
         name: "ClassRoom",
-        component: () =>
-          import(
-            /* webpackChunkName: "ClassRoom" */ "../views/classroom/News.vue"
-          ),
+        component: loadView("classroom/News.vue"),
         meta: {
           transition: "slide-down",
           title: "Lớp học"
@@ -85,12 +129,19 @@ const routes = [
         props: true
       },
       {
+        path: "question",
+        name: "Question",
+        component: loadView("classroom/Question.vue"),
+        meta: {
+          transition: "slide-down",
+          title: "Thảo luận"
+        },
+        props: true
+      },
+      {
         path: "exercise",
         name: "Exercise",
-        component: () =>
-          import(
-            /* webpackChunkName: "Exercise" */ "../views/classroom/Exercise.vue"
-          ),
+        component: loadView("classroom/Exercise.vue"),
         meta: {
           transition: "slide-down",
           title: "Lớp học"
@@ -100,10 +151,7 @@ const routes = [
       {
         path: "groups",
         name: "Groups",
-        component: () =>
-          import(
-            /* webpackChunkName: "Groups" */ "../views/classroom/Groups.vue"
-          ),
+        component: loadView("classroom/Groups.vue"),
         meta: {
           transition: "slide-down",
           title: "Lớp học"
@@ -113,10 +161,7 @@ const routes = [
       {
         path: "members",
         name: "Members",
-        component: () =>
-          import(
-            /* webpackChunkName: "Members" */ "../views/classroom/Members.vue"
-          ),
+        component: loadView("classroom/Members.vue"),
         meta: {
           transition: "slide-down",
           title: "Lớp học"
@@ -132,8 +177,8 @@ const routes = [
       transition: "slide-left",
       title: "Tạo sinh viên mới"
     },
-    component: () =>
-      import(/* webpackChunkName: "CreateUser" */ "../views/CreateUser.vue"),
+    component: loadView("CreateUser.vue"),
+    beforeEnter: checkAdmin,
     children: [
       {
         path: "/student",
@@ -142,10 +187,7 @@ const routes = [
           transition: "slide-left",
           title: "Tạo sinh viên mới"
         },
-        component: () =>
-          import(
-            /* webpackChunkName: "CreateStudent" */ "../views/create_user/CreateStudent.vue"
-          )
+        component: loadView("create_user/CreateStudent.vue")
       },
       {
         path: "/student-import",
@@ -154,10 +196,7 @@ const routes = [
           transition: "slide-right",
           title: "Tạo danh sách sinh viên mới"
         },
-        component: () =>
-          import(
-            /* webpackChunkName: "ImportStudent" */ "../views/create_user/ImportStudent.vue"
-          )
+        component: loadView("create_user/ImportStudent.vue")
       },
       {
         path: "/student-management",
@@ -166,10 +205,7 @@ const routes = [
           transition: "slide-right",
           title: "Quản lý sinh viên"
         },
-        component: () =>
-          import(
-            /* webpackChunkName: "StudentManagement" */ "../views/create_user/Students.vue"
-          )
+        component: loadView("create_user/Students.vue")
       },
       {
         path: "/lecturer",
@@ -178,10 +214,7 @@ const routes = [
           transition: "slide-left",
           title: "Tạo giảng viên mới"
         },
-        component: () =>
-          import(
-            /* webpackChunkName: "CreateLecturer" */ "../views/create_user/CreateLecturer.vue"
-          )
+        component: loadView("create_user/CreateLecturer.vue")
       },
       {
         path: "/lecturer-import",
@@ -190,10 +223,7 @@ const routes = [
           transition: "slide-right",
           title: "Tạo danh sách giảng viên mới"
         },
-        component: () =>
-          import(
-            /* webpackChunkName: "ImportLecturer" */ "../views/create_user/ImportLecturer.vue"
-          )
+        component: loadView("create_user/ImportLecturer.vue")
       },
       {
         path: "/lecturer-management",
@@ -202,10 +232,7 @@ const routes = [
           transition: "slide-right",
           title: "Quản lý giảng viên"
         },
-        component: () =>
-          import(
-            /* webpackChunkName: "LecturerManagement" */ "../views/create_user/Lecturers.vue"
-          )
+        component: loadView("create_user/Lecturers.vue")
       }
     ]
   },

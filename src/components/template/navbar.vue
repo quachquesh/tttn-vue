@@ -1,3 +1,4 @@
+<!--suppress HtmlUnknownTarget -->
 <template>
   <div id="navbar">
     <nav class="navbar">
@@ -22,6 +23,22 @@
             :class="isExactActive && 'active'"
           >
             <span class="middle-item__content">Bảng tin</span>
+          </li>
+        </router-link>
+        <router-link
+          :to="{
+            name: 'Question',
+            params: { roomId: this.$route.params.roomId }
+          }"
+          custom
+          v-slot="{ navigate, isActive }"
+        >
+          <li
+            class="middle-item"
+            @click="navigate"
+            :class="isActive && 'active'"
+          >
+            <span class="middle-item__content">Thảo luận</span>
           </li>
         </router-link>
         <router-link
@@ -86,17 +103,38 @@
             "
             >add</span
           >
-          <ul class="menu-list" :class="{ active: isActiveAddClass }">
+          <ul
+            class="menu-list"
+            :class="{ active: isActiveAddClass }"
+            @click="isActiveAddClass = false"
+          >
             <li class="list-item">Tham gia lớp học</li>
-            <li class="list-item">Tạo lớp học</li>
-            <li class="list-item">Tạo môn học</li>
             <li
               class="list-item"
+              @click="
+                formCreateSubject = true;
+                formCreateClass = false;
+              "
               v-if="$store.state.USER.dataUser.role == 'admin'"
-              @click="$router.push({ name: 'CreateStudent' })"
             >
-              Tạo tài khoản
+              Tạo môn học
             </li>
+            <li class="list-item" @click="openFormCreateClass()" v-if="$store.state.USER.dataUser.role">
+              Tạo lớp học
+            </li>
+            <router-link
+              :to="{ name: 'CreateStudent' }"
+              custom
+              v-slot="{ navigate }"
+            >
+              <li
+                class="list-item"
+                v-if="$store.state.USER.dataUser.role == 'admin'"
+                @click="navigate"
+              >
+                Tạo tài khoản
+              </li>
+            </router-link>
           </ul>
         </li>
         <li class="menu-item">
@@ -111,7 +149,11 @@
             "
             >notifications</span
           >
-          <ul class="menu-list" :class="{ active: isActiveNotify }">
+          <ul
+            class="menu-list"
+            :class="{ active: isActiveNotify }"
+            @click="isActiveNotify = false"
+          >
             <li class="list-item">Chức năng đang xây dựng</li>
           </ul>
         </li>
@@ -127,7 +169,11 @@
             "
             >account_circle</span
           >
-          <ul class="menu-list" :class="{ active: isActiveUser }">
+          <ul
+            class="menu-list"
+            :class="{ active: isActiveUser }"
+            @click="isActiveUser = false"
+          >
             <li class="list-item">Thông tin tài khoản</li>
             <li class="list-item" @click="logout()">Đăng xuất</li>
           </ul>
@@ -137,6 +183,163 @@
         </li> -->
       </ul>
     </nav>
+    <!--Form Subject New-->
+    <transition name="fade">
+      <div class="form-box" v-if="formCreateSubject && !formCreateClass">
+        <div class="overlay" @click="formCreateSubject = false"></div>
+        <form
+          @submit.prevent="createSubject()"
+          class="form-body"
+          :lock-scroll="false"
+        >
+          <div class="form-block">
+            <h3 class="form-title">Tạo môn học mới</h3>
+            <div class="form-group">
+              <input
+                type="text"
+                :class="{ valid: dataSubject.name }"
+                v-model="dataSubject.name"
+              />
+              <label>
+                Tên
+                <span class="required">*</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                :class="{ valid: dataSubject.description }"
+                v-model="dataSubject.description"
+              />
+              <label>
+                Mô tả
+              </label>
+            </div>
+            <div class="group-row block">
+              <label class="title">
+                Chủ đề:
+                <span class="required">*</span>
+              </label>
+              <el-select v-model="dataSubject.img" placeholder="Select">
+                <el-option
+                  v-for="(theme, index) in dataTheme"
+                  :key="index"
+                  :label="theme.name"
+                  :value="theme.link"
+                >
+                </el-option>
+              </el-select>
+            </div>
+            <div class="form-btn-group">
+              <button
+                class="btn btn-danger"
+                @click.prevent="formCreateSubject = false"
+              >
+                Hủy
+              </button>
+              <button
+                class="btn btn-success"
+                style="margin-left: 15px"
+                @click="$customjs.clickBtnAnimation($event)"
+              >
+                Tạo môn học
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </transition>
+    <!--Form Class New-->
+    <transition name="fade">
+      <div class="form-box" v-if="formCreateClass && !formCreateSubject">
+        <div class="overlay" @click="formCreateClass = false"></div>
+        <form
+          @submit.prevent="createClass()"
+          class="form-body"
+          :lock-scroll="false"
+        >
+          <div class="form-block">
+            <h3 class="form-title">Tạo lớp học mới</h3>
+            <div class="form-group">
+              <input
+                type="text"
+                :class="{ valid: dataClass.name }"
+                v-model="dataClass.name"
+              />
+              <label>
+                Tên
+                <span class="required">*</span>
+              </label>
+            </div>
+            <div class="form-group">
+              <input
+                type="text"
+                :class="{ valid: dataClass.description }"
+                v-model="dataClass.description"
+              />
+              <label>
+                Mô tả
+              </label>
+            </div>
+            <div class="group-row block">
+              <label class="title">
+                Chủ đề:
+                <span class="required">*</span>
+              </label>
+              <el-select v-model="dataClass.img" placeholder="Chọn chủ đề">
+                <el-option
+                  v-for="(theme, index) in dataTheme"
+                  :key="index"
+                  :label="theme.name"
+                  :value="theme.link"
+                >
+                </el-option>
+              </el-select>
+            </div>
+            <div class="group-row block">
+              <label class="title">
+                Môn học:
+                <span class="required">*</span>
+              </label>
+              <el-select
+                v-model="dataClass.subject_id"
+                filterable
+                placeholder="Chọn lớp học"
+              >
+                <el-option
+                  v-for="(subject, index) in dataSubjectAll"
+                  :key="index"
+                  :label="subject.name"
+                  :value="subject.id"
+                >
+                  <span style="float: left; margin-right: 10px;">{{
+                    subject.name
+                  }}</span>
+                  <span style="float: right; color: #8492a6; font-size: 13px">{{
+                    subject.description
+                  }}</span>
+                </el-option>
+              </el-select>
+            </div>
+            <div class="form-btn-group">
+              <button
+                class="btn btn-danger"
+                @click.prevent="formCreateClass = false"
+              >
+                Hủy
+              </button>
+              <button
+                class="btn btn-success"
+                style="margin-left: 15px"
+                @click="$customjs.clickBtnAnimation($event)"
+              >
+                Tạo lớp học
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -149,10 +352,130 @@ export default {
       isActiveAddClass: false,
       isActiveNotify: false,
       isActiveUser: false,
-      formCreateStudent: false
+      formCreateSubject: false,
+      formCreateClass: false,
+      dataSubjectAll: [],
+      dataSubject: {
+        name: "",
+        description: "",
+        img: "/assets/img/code.jpg"
+      },
+      dataClass: {
+        name: "",
+        description: "",
+        img: "/assets/img/code.jpg",
+        subject_id: ""
+      },
+      dataTheme: [
+        {
+          name: "Code",
+          link: "/assets/img/code.jpg"
+        },
+        {
+          name: "Graduation",
+          link: "/assets/img/graduation.jpg"
+        },
+        {
+          name: "Learn Language",
+          link: "/assets/img/learnlanguage.jpg"
+        },
+        {
+          name: "Writing",
+          link: "/assets/img/Writing.jpg"
+        }
+      ]
     };
   },
   methods: {
+    createSubject() {
+      let token = localStorage.getItem("token_user");
+      if (token) {
+        this.$store
+          .dispatch("apiCreateSubject", [token, this.dataSubject])
+          .then(res => {
+            if (res.data.status) {
+              this.$message.success(res.data.message);
+              this.$set(this.dataSubject, "name", "");
+              this.$set(this.dataSubject, "description", "");
+              if (this.dataSubjectAll.length > 0) {
+                this.dataSubjectAll.push(res.data.data);
+              }
+            } else {
+              this.$message.error(res.data.message);
+            }
+          })
+          .catch(err => {
+            if (err.response.status == 422 && err.response.data.errors.name) {
+              this.$message.error("Chưa nhập tên môn học");
+            } else {
+              this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+            }
+          });
+      }
+    },
+    openFormCreateClass() {
+      if (this.dataSubjectAll.length < 1) {
+        this.$store
+          .dispatch("apiGetAllSubjects", localStorage.getItem("token_user"))
+          .then(res => {
+            this.$set(this, "dataSubjectAll", res.data);
+          })
+          .catch(() => {
+            this.$message.error("Lấy thông tin môn học thất bại");
+          });
+      }
+      this.formCreateClass = true;
+      this.formCreateSubject = false;
+    },
+    createClass() {
+      let token = localStorage.getItem("token_user");
+      if (token) {
+        this.$store
+          .dispatch("apiCreateClassSubject", [token, this.dataClass])
+          .then(res => {
+            if (res.data.status) {
+              this.$message.success(res.data.message);
+              if (
+                this.$store.getters.getSubjectCurrentId ==
+                this.dataClass.subject_id
+              ) {
+                this.dataSubjectAll.forEach(subject => {
+                  if (subject.id === res.data.data.subject_id) {
+                    this.$set(res.data.data, "subject_name", subject.name);
+                    this.$set(res.data.data, "subject_description", subject.description);
+                    this.$store.commit("addClassSubject", res.data.data);
+                    return true;
+                  }
+                });
+              } else if (this.$store.getters.getSubjectCurrentId === null) {
+                this.dataSubjectAll.forEach(subject => {
+                  if (subject.id === this.dataClass.subject_id) {
+                    this.$store.commit("addNewSubject", subject);
+                    return true;
+                  }
+                });
+              }
+              // reset value
+              this.$set(this.dataClass, "name", "");
+              this.$set(this.dataClass, "description", "");
+            } else {
+              this.$message.error(res.data.message);
+            }
+          })
+          .catch(err => {
+            if (err.response.status == 422 && err.response.data.errors.name) {
+              this.$message.error("Chưa nhập tên lớp");
+            } else if (
+              err.response.status == 422 &&
+              err.response.data.errors.subject_id
+            ) {
+              this.$message.error("Chưa chọn môn học");
+            } else {
+              this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+            }
+          });
+      }
+    },
     async logout() {
       if (!this.$store.state.USER.dataUser.role) {
         await apiStudent
@@ -230,7 +553,7 @@ export default {
 };
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
 #navbar {
   z-index: 1503;
   position: fixed;
@@ -243,8 +566,8 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0px 20px;
-    box-shadow: 0px 2px 3px rgba(#1f1f1f, 0.2);
+    padding: 0 20px;
+    box-shadow: 0 2px 3px rgba(#1f1f1f, 0.2);
 
     .nav-icon {
       cursor: pointer;
@@ -269,7 +592,7 @@ export default {
         display: flex;
         justify-content: center;
         align-items: center;
-        padding: 0px 25px;
+        padding: 0 25px;
         box-sizing: border-box;
         cursor: pointer;
         position: relative;
@@ -356,7 +679,7 @@ export default {
         .menu-content {
           font-size: 22px;
           font-family: var(--font-kanit);
-          margin: 0px 5px;
+          margin: 0 5px;
           font-weight: 400;
         }
 
@@ -368,9 +691,9 @@ export default {
           list-style: none;
           background-color: #fff;
           width: max-content;
-          padding: 10px 0px;
+          padding: 10px 0;
           border-radius: 5px;
-          box-shadow: 0px 3px 4px rgba(#000, 0.3);
+          box-shadow: 0 3px 4px rgba(#000, 0.3);
           opacity: 0;
           visibility: hidden;
           transform: translateY(120%);
@@ -392,6 +715,43 @@ export default {
               background-color: rgba(#969696, 0.4);
             }
           }
+        }
+      }
+    }
+  }
+}
+.form-box {
+  z-index: 1500;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  .overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    background-color: rgba(#000, 0.2);
+  }
+  form {
+    min-width: 400px;
+    max-width: 90%;
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%);
+    .form-block {
+      box-shadow: 7px 7px 14px rgba(#000, 0.2), -3px -3px 7px rgba(#ddd, 1);
+    }
+    .group-row {
+      margin-top: 18px;
+      .title {
+        font-weight: 500;
+        font-size: 16px;
+        margin-right: 16px;
+        .required {
+          color: red;
         }
       }
     }

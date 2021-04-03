@@ -134,6 +134,7 @@
 
 <script>
 import apiLecturer from "@/api/lecturer.js";
+import apiStudent from "@/api/student";
 export default {
   data() {
     return {
@@ -206,8 +207,27 @@ export default {
         });
     }
   },
-  created() {
-    this.$router.options.nprogress.done();
+  async beforeCreate() {
+    if (this.$store.state.USER.dataUser.role === "admin") {
+      this.$router.options.nprogress.set(0.7);
+      // Xử lý cái gì đó
+      this.$router.options.nprogress.done();
+    } else {
+      // Trường hợp load lại trang
+      this.$store.dispatch("checkLogin").then(res => {
+        this.$router.options.nprogress.set(0.7);
+        if (res.role === "admin") {
+          apiStudent
+            .getAllStudent(localStorage.getItem("token_user"))
+            .then(res => {
+              this.$set(this, "dataTables", res.data);
+            });
+        } else {
+          this.$router.push("/");
+        }
+        this.$router.options.nprogress.done();
+      });
+    }
   }
 };
 </script>

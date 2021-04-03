@@ -30,13 +30,10 @@
     <div class="table-list-import">
       <div class="header">
         <div class="left">
-          <span class="status-details success">Thành công</span>
-          <span class="status-details fail"
-            >Thất bại, dữ liệu không hợp lệ</span
-          >
-          <span class="status-details required"
-            >Cột bắt buộc phải có dữ liệu</span
-          >
+          <span class="status-details success" :class="{ 'line-through': !statusFilter.success }" @click="statusFilter.success = !statusFilter.success">Thành công</span>
+          <span class="status-details fail" :class="{ 'line-through': !statusFilter.fail }" @click="statusFilter.fail = !statusFilter.fail">Thất bại, dữ liệu không hợp lệ</span>
+          <span class="status-details duplicate" :class="{ 'line-through': !statusFilter.duplicate }" @click="statusFilter.duplicate = !statusFilter.duplicate">Đã tồn tại</span>
+          <span class="status-details required">Cột bắt buộc phải có dữ liệu</span>
         </div>
         <div class="right">
           <label for="export-file-name">Tên file: </label>
@@ -63,11 +60,12 @@
           </th>
         </tr>
         <tr
-          v-for="(value, index) in dataTable"
+          v-for="(value, index) in filterDataTable()"
           :key="index"
           :class="{
-            success: value['status'] === true,
-            fail: value['status'] === false
+            fail: value['status'] === 0,
+            success: value['status'] === 1,
+            duplicate: value['status'] === 2
           }"
         >
           <td>{{ index + 1 }}</td>
@@ -97,10 +95,30 @@ export default {
     return {
       progressRatio: 0,
       tableHeader: {},
-      dataTable: []
+      dataTable: [],
+      statusFilter: {
+        success: true,
+        fail: true,
+        duplicate: true
+      }
     };
   },
   methods: {
+    filterDataTable() {
+      if (this.dataTable[0] && this.dataTable[0].status == undefined) {
+        return this.dataTable;
+      }
+      return this.dataTable.filter(x => {
+        if (this.statusFilter.fail && x.status === 0) {
+          return true;
+        } else if (this.statusFilter.success && x.status === 1) {
+          return true;
+        } else if (this.statusFilter.duplicate && x.status === 2) {
+          return true;
+        }
+        return false;
+      });
+    },
     exportFile() {
       let fileName = document.getElementById("export-file-name");
       if (fileName.value === "") {
@@ -336,6 +354,10 @@ function doit(fileName) {
         display: flex;
         align-items: center;
         margin-right: 24px;
+        cursor: pointer;
+        &.line-through {
+          text-decoration-line: line-through;
+        }
         &.success {
           &::before {
             content: "";
@@ -356,6 +378,7 @@ function doit(fileName) {
         }
 
         &.required {
+          cursor: unset;
           &::before {
             content: "";
             width: 14px;
@@ -363,6 +386,18 @@ function doit(fileName) {
             background: var(--color-primary);
             margin-right: 5px;
           }
+        }
+        &.duplicate {
+          &::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            background: var(--color-purple);
+            margin-right: 5px;
+          }
+        }
+        &.line-through {
+          text-decoration-line: line-through;
         }
       }
     }
@@ -424,6 +459,11 @@ function doit(fileName) {
       &.fail {
         td {
           color: var(--color-danger);
+        }
+      }
+      &.duplicate {
+        td {
+          color: var(--color-purple);
         }
       }
     }

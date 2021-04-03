@@ -5,14 +5,33 @@
         <div class="classroom-banner">
           <div class="banner-body">
             <div class="class-banner-top">
-              <h2 class="banner-title">Lớp: D17_TH01</h2>
-              <h3 class="banner-description">Mô tả lớp bla bla</h3>
+              <h2 class="banner-title">
+                {{ $store.getters.getClassDetails.name }}
+              </h2>
+              <h3 class="banner-description">
+                {{ $store.getters.getClassDetails.description }}<br />
+                {{
+                  $store.getters.getSubjectDetails.name +
+                    " (" +
+                    $store.getters.getSubjectDetails.description +
+                    ")"
+                }}
+              </h3>
               <div class="banner-class-key">
                 <span class="key-title">Mã lớp: </span>
-                <span class="key-content" id="class_key">abc2xyz</span>
-                <span class="key-icon material-icons" @click="copyClassKey()"
-                  >content_copy</span
+                <span class="key-content" id="class_key">{{
+                  $store.getters.getClassDetails.key
+                }}</span>
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  content="Copy mã lớp"
+                  placement="right"
                 >
+                  <span class="key-icon material-icons" @click="copyClassKey()"
+                    >content_copy</span
+                  >
+                </el-tooltip>
               </div>
             </div>
             <div class="class-banner-bottom">
@@ -344,26 +363,28 @@ export default {
       });
     },
     copyClassKey() {
-      let classKey = document.getElementById("class_key");
-      navigator.clipboard.writeText(classKey.innerText).then(
-        () => {
-          this.$customjs.showToast({
-            title: "Thành công",
-            message: "Copy mã lớp thành công"
-          });
-        },
-        () => {
-          this.$customjs.showToast({
-            title: "Lỗi",
-            message: "Copy mã lớp thất bại",
-            type: 1
-          });
-        }
-      );
+      navigator.clipboard
+        .writeText(this.$store.getters.getClassDetails.key)
+        .then(
+          () => {
+            this.$customjs.showToast({
+              title: "Thành công",
+              message: "Copy mã lớp thành công"
+            });
+          },
+          () => {
+            this.$customjs.showToast({
+              title: "Lỗi",
+              message: "Copy mã lớp thất bại",
+              type: 1
+            });
+          }
+        );
     },
     postNotifyFile() {},
     postNotifyCancel(event) {
       this.postNotifyBox = true;
+      this.notifyBody = false;
       this.$customjs.clickBtnAnimation(event);
     },
     postNotifyUpload(event) {
@@ -704,6 +725,7 @@ export default {
           position: relative;
           overflow: hidden;
           border-radius: 5px;
+          background-color: #f8f8f8;
 
           &.active {
             label {
@@ -712,11 +734,13 @@ export default {
             }
           }
           .notify-content {
-            background-color: #f8f8f8;
+            background-color: transparent;
             resize: none;
             height: 128px;
             width: 100%;
-            padding: 26px 16px 9px;
+            padding: 0 16px 9px;
+            margin-top: 28px;
+            overflow: hidden;
             border-radius: 5px;
             border: none;
             outline: none;

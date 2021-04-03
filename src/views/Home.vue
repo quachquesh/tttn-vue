@@ -11,11 +11,7 @@
 </template>
 
 <script>
-export default {
-  created() {
-    this.$router.options.nprogress.done();
-  }
-};
+export default {};
 </script>
 
 <style></style>

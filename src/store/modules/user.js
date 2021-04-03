@@ -1,6 +1,9 @@
 import Vue from "vue";
+import apiLecturer from "@/api/lecturer";
+import apiStudent from "@/api/student";
 
 const state = {
+  token: localStorage.getItem("token_user") || "",
   isLogin: false,
   dataUser: {
     id: null,
@@ -26,6 +29,9 @@ const getters = {
   },
   getUserRole: state => {
     return state.dataUser.role;
+  },
+  getUserId: state => {
+    return state.dataUser.id;
   }
 };
 const mutations = {
@@ -36,7 +42,45 @@ const mutations = {
     Vue.set(state, "dataUser", dataUser);
   }
 };
-const actions = {};
+const actions = {
+  checkLogin({ commit }) {
+    let token_user = localStorage.getItem("token_user");
+    return new Promise((resolve, reject) => {
+      if (token_user) {
+        apiLecturer
+          .userDetails(token_user)
+          .then(res => {
+            commit("setStateLogin", true);
+            commit("setDataUser", res.data);
+            resolve(res.data);
+          })
+          .catch(err => {
+            if (err.response.data.message === "Unauthenticated.") {
+              apiStudent
+                .userDetails(token_user)
+                .then(res => {
+                  commit("setStateLogin", true);
+                  commit("setDataUser", res.data);
+                  resolve(res.data);
+                })
+                .catch(() => {
+                  commit("setStateLogin", false);
+                  localStorage.removeItem("token_user");
+                  reject();
+                });
+            } else {
+              localStorage.removeItem("token_user");
+              commit("setStateLogin", false);
+              reject();
+            }
+          });
+      } else {
+        commit("setStateLogin", false);
+        reject();
+      }
+    });
+  }
+};
 
 export default {
   namespace: true,

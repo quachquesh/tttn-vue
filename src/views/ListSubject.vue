@@ -1,48 +1,25 @@
+<!--suppress JSUnusedGlobalSymbols -->
 <template>
   <div id="subject" class="display-grid-card">
+    <loading z-index="1500" :loading="loading" />
     <div
-      v-for="subject in subjects"
+      v-for="subject in this.$store.state.SUBJECT.subjects"
       :key="subject.id"
       @click="clickSubject(subject.id)"
     >
-      <card-subject :dataCard="subject" />
+      <card-subject :dataSubject="subject" />
     </div>
   </div>
 </template>
 
 <script>
 import CardSubject from "@/components/template/card_subject.vue";
+import Loading from "@/components/template/loading";
+
 export default {
   data: function() {
     return {
-      subjects: [
-        {
-          id: 1,
-          title: "Quản trị cơ sở dữ liệu Quản trị cơ sở dữ liệu ",
-          description: "abc xyz"
-        },
-        {
-          id: 2,
-          title: "Nhập môn lập trình",
-          description: "abc xyz"
-        },
-        {
-          id: 3,
-          title: "Thực hành: Lập trình web",
-          description: "abc xyz"
-        },
-        {
-          id: 4,
-          title: "Nhập môn lập trình",
-          description: "abc xyz"
-        },
-        {
-          id: 5,
-          title:
-            "Thực hành: Lập trình web Thực hành: Lập trình web Thực hành: Lập trình web",
-          description: "abc xyz"
-        }
-      ]
+      loading: true
     };
   },
   methods: {
@@ -51,11 +28,23 @@ export default {
     }
   },
   components: {
+    Loading,
     CardSubject
   },
-  created() {
+  async beforeCreate() {
     document.title = "Danh sách môn học";
+    this.$router.options.nprogress.set(0.7);
+    await this.$store
+      .dispatch("apiGetSubjectByUserId", localStorage.getItem("token_user"))
+      .then(res => {
+        this.$store.commit("setDataSubject", res.data);
+      })
+      .catch(() => {
+        this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+      });
+    this.$store.commit("setSubjectId", null);
     this.$router.options.nprogress.done();
+    this.loading = false;
   }
 };
 </script>

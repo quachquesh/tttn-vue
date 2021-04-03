@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <loading :loading="loading" />
     <navbar />
     <div id="app-body">
       <nprogress-container></nprogress-container>
@@ -13,17 +14,20 @@
 <script>
 import NprogressContainer from "vue-nprogress/src/NprogressContainer";
 import Navbar from "@/components/template/navbar.vue";
-import apiStudent from "@/api/student.js";
-import apiLecturer from "@/api/lecturer.js";
+import Loading from "@/components/template/loading.vue";
+// import apiStudent from "@/api/student.js";
+// import apiLecturer from "@/api/lecturer.js";
 export default {
   data() {
     return {
-      transitionName: "fade"
+      transitionName: "fade",
+      loading: true
     };
   },
   components: {
     NprogressContainer,
-    Navbar
+    Navbar,
+    Loading
   },
   watch: {
     $route: {
@@ -34,44 +38,11 @@ export default {
       }
     }
   },
-  async created() {
-    let token_user = localStorage.getItem("token_user");
-    if (token_user) {
-      await apiLecturer
-        .userDetails(token_user)
-        .then(res => {
-          this.$store.commit("setStateLogin", true);
-          this.$store.commit("setDataUser", res.data);
-          if (this.$route.name === "Login") {
-            this.$router.push("/");
-          }
-        })
-        .catch(err => {
-          if (err.response.data.message === "Unauthenticated.") {
-            apiStudent
-              .userDetails(token_user)
-              .then(res => {
-                this.$store.commit("setStateLogin", true);
-                this.$store.commit("setDataUser", res.data);
-                if (this.$route.name === "Login") {
-                  this.$router.push("/");
-                }
-              })
-              .catch(() => {
-                this.$store.commit("setStateLogin", false);
-                this.$router.push("/dang-nhap");
-              });
-          }
-        });
-    } else {
-      await this.$router.push("/dang-nhap");
-    }
-    // this.$store.dispatch("checkLogin", localStorage.getItem("token_user"))
+  mounted() {
+    setTimeout(() => {
+      this.loading = false;
+    }, 1000);
   }
-  // mounted() {
-  //   console.log('abasd');
-  //   custom.clickBtnAnimation();
-  // },
 };
 </script>
 

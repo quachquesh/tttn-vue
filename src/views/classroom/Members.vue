@@ -1,143 +1,492 @@
 <template>
-  <div class="grid wide">
-    <div class="row">
-      <div class="col c-12 lecturer-group">
-        <div class="header">
-          <h2>Giảng viên</h2>
+  <div>
+    <div class="grid wide">
+      <div class="row">
+        <div class="col c-12 lecturer-group">
+          <div class="header">
+            <h2>Giảng viên</h2>
+          </div>
+          <ul class="list-lecturers">
+            <li class="item">
+              <span class="avt">
+                <img src="/assets/img/hacker.png" />
+              </span>
+              <span class="name">{{
+                $store.state.CLASSSUBJECTDETAILS.classLecturer.first_name +
+                  " " +
+                  $store.state.CLASSSUBJECTDETAILS.classLecturer.last_name
+              }}</span>
+            </li>
+          </ul>
         </div>
-        <ul class="list-lecturers">
-          <li class="item">
-            <span class="avt">
-              <img src="/assets/img/hacker.png" />
+      </div>
+      <div class="row">
+        <div class="col c-12 student-group">
+          <div class="header">
+            <h2>Sinh viên</h2>
+            <span class="add-student">
+              <span class="number-student"
+                >{{ $store.state.CLASSSUBJECTDETAILS.classMembers.length }} Sinh
+                viên</span
+              >
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="Thêm sinh viên theo mssv"
+                placement="top"
+                v-if="$store.state.USER.dataUser.role"
+              >
+                <span class="material-icons" @click="addStudent()"
+                  >person_add</span
+                >
+              </el-tooltip>
+              <el-tooltip
+                class="item"
+                effect="dark"
+                content="Thêm sinh viên theo danh sách"
+                placement="top"
+                v-if="$store.state.USER.dataUser.role"
+              >
+                <span
+                  class="material-icons"
+                  @click="formInviteStudentList = true"
+                  >group_add</span
+                >
+              </el-tooltip>
             </span>
-            <span class="name">Nguyễn Quốc Trung</span>
-          </li>
-        </ul>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col c-12 student-group">
-        <div class="header">
-          <h2>Sinh viên</h2>
-          <span class="add-student">
-            <span class="number-student">2 Sinh viên</span>
-            <span class="material-icons">person_add_alt</span>
-          </span>
-        </div>
-        <ul class="list-students">
-          <li class="item first">
-            <div class="left">
-              <input type="checkbox" />
-              <span class="select-option">
-                <span class="select-box" @click="clickSelectBox($event)">
-                  <span class="content">Tác vụ</span>
-                  <span class="material-icons">expand_more</span>
+          </div>
+          <ul class="list-students">
+            <li class="item first">
+              <div class="left">
+                <input type="checkbox" />
+                <span class="select-option">
+                  <span class="select-box" @click="clickSelectBox($event)">
+                    <span class="content">Tác vụ</span>
+                    <span class="material-icons">expand_more</span>
+                  </span>
+                  <ul class="list-option">
+                    <li class="option">option 1 option 1</li>
+                    <li class="option">option 2</li>
+                    <li class="option">option 3</li>
+                    <li class="option">option 4</li>
+                    <li class="option">option 5</li>
+                  </ul>
                 </span>
-                <ul class="list-option">
-                  <li class="option">option 1 option 1</li>
-                  <li class="option">option 2</li>
-                  <li class="option">option 3</li>
-                  <li class="option">option 4</li>
-                  <li class="option">option 5</li>
-                </ul>
-              </span>
-            </div>
-            <div class="right">
-              <span class="material-icons">sort_by_alpha</span>
-            </div>
-          </li>
-          <li class="item">
-            <div class="left">
-              <input type="checkbox" />
-              <span class="avt">
-                <img src="/assets/img/hacker.png" />
-              </span>
-              <span class="name">Nguyễn Quốc Trung</span>
-            </div>
-            <div class="right">
-              <span class="dots">
-                <svg focusable="false" viewBox="0 0 24 24" class="NMm5M">
-                  <path
-                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                  ></path>
-                </svg>
-              </span>
-            </div>
-          </li>
-          <li class="item">
-            <div class="left">
-              <input type="checkbox" />
-              <span class="avt">
-                <img src="/assets/img/hacker.png" />
-              </span>
-              <span class="name">Nguyễn Quốc Trung</span>
-            </div>
-            <div class="right">
-              <span class="dots">
-                <svg focusable="false" viewBox="0 0 24 24" class="NMm5M">
-                  <path
-                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                  ></path>
-                </svg>
-              </span>
-            </div>
-          </li>
-          <li class="item">
-            <div class="left">
-              <input type="checkbox" />
-              <span class="avt">
-                <img src="/assets/img/hacker.png" />
-              </span>
-              <span class="name">Nguyễn Quốc Trung</span>
-            </div>
-            <div class="right">
-              <span class="dots">
-                <svg focusable="false" viewBox="0 0 24 24" class="NMm5M">
-                  <path
-                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                  ></path>
-                </svg>
-              </span>
-            </div>
-          </li>
-          <li class="item">
-            <div class="left">
-              <input type="checkbox" />
-              <span class="avt">
-                <img src="/assets/img/hacker.png" />
-              </span>
-              <span class="name">Nguyễn Quốc Trung</span>
-            </div>
-            <div class="right">
-              <span class="dots">
-                <svg focusable="false" viewBox="0 0 24 24" class="NMm5M">
-                  <path
-                    d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
-                  ></path>
-                </svg>
-              </span>
-            </div>
-          </li>
-        </ul>
+              </div>
+              <div class="right">
+                <el-tooltip
+                  class="item"
+                  effect="dark"
+                  content="Sắp xếp theo tên"
+                  placement="top"
+                >
+                  <span class="material-icons">sort_by_alpha</span>
+                </el-tooltip>
+              </div>
+            </li>
+            <li
+              class="item"
+              v-for="member in $store.state.CLASSSUBJECTDETAILS.classMembers"
+              :key="member.id"
+            >
+              <div class="left">
+                <input type="checkbox" />
+                <span class="avt">
+                  <img src="/assets/img/hacker.png" />
+                </span>
+                <span class="name">{{
+                  member.first_name + " " + member.last_name
+                }}</span>
+              </div>
+              <div class="right">
+                <span class="dots">
+                  <svg focusable="false" viewBox="0 0 24 24" class="NMm5M">
+                    <path
+                      d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
+                    ></path>
+                  </svg>
+                </span>
+              </div>
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
+
+    <!--  FORM THÊM HỌC VIÊN  -->
+    <transition name="fade">
+      <div class="form-box" v-if="formAddStudent">
+        <div class="overlay" @click="formAddStudent = false"></div>
+        <form
+          @submit.prevent="submitAddStudent()"
+          class="form-body"
+          :lock-scroll="false"
+        >
+          <div class="form-block">
+            <h3 class="form-title-small">Thêm học viên</h3>
+            <el-tooltip
+              class="item"
+              effect="dark"
+              content="Copy liên kết mời"
+              placement="right"
+            >
+              <div class="form-group" @click="copyLinkInvite($event)">
+                <input
+                  type="text"
+                  class="valid copy"
+                  :value="linkInvite"
+                  disabled
+                  style="cursor: pointer; font-size: 14px"
+                  name="linkInvite"
+                />
+                <label>
+                  Đường liên kết mời
+                </label>
+              </div>
+            </el-tooltip>
+
+            <el-select
+              v-model="listStudentSelect"
+              multiple
+              filterable
+              remote
+              reserve-keyword
+              placeholder="Nhập MSSV"
+              style="width: 100%"
+            >
+              <el-option
+                v-for="student in $store.state.STUDENT.students"
+                :key="student.mssv"
+                :label="student.mssv"
+                :value="student.id"
+              >
+                <span style="float: left; margin-right: 10px;">{{
+                  student.mssv
+                }}</span>
+                <span style="float: right; color: #8492a6; font-size: 13px">{{
+                  student.first_name + " " + student.last_name
+                }}</span>
+              </el-option>
+            </el-select>
+            <div class="form-btn-group">
+              <button
+                class="btn btn-danger"
+                @click.prevent="formAddStudent = false"
+              >
+                Hủy
+              </button>
+              <button
+                class="btn btn-success"
+                style="margin-left: 15px"
+                @click="$customjs.clickBtnAnimation($event)"
+              >
+                Thêm
+              </button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </transition>
+    <!--  FORM THÊM HỌC VIÊN IMPORT  -->
+    <transition name="fade">
+      <div
+        class="form-box"
+        id="form-invite-import"
+        v-if="formInviteStudentList"
+      >
+        <div class="overlay" @click="formInviteStudentList = false"></div>
+        <div class="form-block">
+          <h3 class="form-title-small">Thêm học viên</h3>
+          <div class="group-row flex">
+            <label>File import</label>
+            <input type="file" @change="importFile" />
+            <button class="btn btn-primary" @click="addStudentImport">
+              Thêm
+            </button>
+          </div>
+          <div class="group-row flex">
+            <label>Chuyển lớp nếu sinh viên học lớp khác: </label>
+            <el-switch v-model="override"></el-switch>
+          </div>
+          <div class="group-row flex">
+            <span class="status-details success" :class="{ 'line-through': !statusFilter.success }" @click="statusFilter.success = !statusFilter.success">
+              Thành công
+            </span>
+            <span class="status-details fail" :class="{ 'line-through': !statusFilter.fail }" @click="statusFilter.fail = !statusFilter.fail">
+              Đã học lớp khác
+            </span>
+            <span class="status-details duplicate" :class="{ 'line-through': !statusFilter.duplicate }" @click="statusFilter.duplicate = !statusFilter.duplicate">
+              Đã ở lớp này
+            </span>
+          </div>
+          <div class="group-row flex table">
+            <table class="table-import">
+              <tr class="header">
+                <th>STT</th>
+                <th>MSSV</th>
+              </tr>
+              <tr
+                v-for="(value, index) in filterDataImport()"
+                :key="index"
+                :class="{
+                  fail: value['status'] === 0,
+                  success: value['status'] === 1,
+                  duplicate: value['status'] === 2
+                }"
+              >
+                <td>{{ index + 1 }}</td>
+                <td>{{ value['mssv'] || value }}</td>
+              </tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
+import apiClassMember from "@/api/classMember";
+import XLSX from "xlsx";
 export default {
   props: {
     roomId: {
       required: true
-    }
+    },
+    classSubject: {},
+    subject: {}
+  },
+  data() {
+    return {
+      formAddStudent: false,
+      formInviteStudentList: false,
+      listStudentSelect: [],
+      dataImport: [],
+      override: false,
+      statusFilter: {
+        success: true,
+        fail: true,
+        duplicate: true
+      }
+    };
   },
   methods: {
+    addStudent() {
+      this.formAddStudent = true;
+      this.$store
+        .dispatch("reqGetAllStudent", localStorage.getItem("token_user"))
+        .then(res => {
+          this.$store.commit("setDataStudent", res.data);
+          this.$message.success("load danh sách sinh viên thành công");
+        })
+        .catch(() => {
+          this.$message.error("load danh sách sinh viên thất bại");
+        });
+    },
+    async submitAddStudent() {
+      await apiClassMember
+        .create(
+          localStorage.getItem("token_user"),
+          this.listStudentSelect,
+          this.roomId
+        )
+        .then(res => {
+          let listSuccess = res.data.filter(x => x.status === 1);
+          if (listSuccess.length > 0) {
+            this.$store.commit("addNewMember", listSuccess);
+            this.$message.success("Thêm thành viên thành công");
+          }
+          // Xử lý sinh viên đã học lớp khác cùng môn
+          let listFailtId = [];
+          let listFail = res.data.filter(x => {
+            if (x.status === 0) {
+              listFailtId.push(x.id);
+              return true;
+            }
+            return false;
+          });
+          let lengthFail = listFail.length;
+          if (lengthFail > 0) {
+            const h = this.$createElement;
+            let mssvFail = [
+              h(
+                "h3",
+                { style: "color: red" },
+                "Bạn có muốn chuyển lớp các sinh viên này?"
+              )
+            ];
+            listFail.forEach((value, index) => {
+              if (index == lengthFail - 1) {
+                mssvFail.push(h("span", null, value.mssv));
+              } else {
+                mssvFail.push(h("span", null, value.mssv + ", "));
+              }
+            });
+            this.$msgbox({
+              title: "Các sinh viên đã học lớp khác",
+              message: h("p", null, mssvFail),
+              showCancelButton: true,
+              confirmButtonText: "OK",
+              cancelButtonText: "Cancel",
+              beforeClose: (action, instance, done) => {
+                if (action === "confirm") {
+                  instance.confirmButtonLoading = true;
+                  instance.confirmButtonText = "Loading...";
+                  apiClassMember
+                    .create(
+                      localStorage.getItem("token_user"),
+                      listFailtId,
+                      this.roomId,
+                      true
+                    )
+                    .then(res => {
+                      let listSuccess = res.data.filter(x => x.status === 1);
+                      this.$store.commit("addNewMember", listSuccess);
+                      this.$message.success("Thêm thành viên thành công");
+                    })
+                    .catch(() =>
+                      this.$message.error("Không thể gửi yêu cầu đến máy chú")
+                    );
+                  done();
+                  instance.confirmButtonLoading = false;
+                } else {
+                  done();
+                }
+              }
+            });
+          }
+          this.formAddStudent = false;
+        })
+        .catch(() => this.$message.error("Không thể gửi yêu cầu đến máy chú"));
+    },
     clickSelectBox(event) {
       let element = event.target;
       while (!element.classList.contains("select-option")) {
         element = element.parentElement;
       }
       element.querySelector(".list-option").classList.toggle("active");
+    },
+    copyLinkInvite() {
+      let link = document.querySelector("#form-invite input[name='linkInvite']")
+        .value;
+      navigator.clipboard.writeText(link).then(
+        () => {
+          this.$customjs.showToast({
+            title: "Thành công",
+            message: "Copy Link mời thành công"
+          });
+        },
+        () => {
+          this.$customjs.showToast({
+            title: "Lỗi",
+            message: "Copy mã lớp thất bại",
+            type: 1
+          });
+        }
+      );
+    },
+    importFile(evt) {
+      let file;
+      let files = evt.target.files;
+
+      if (!files || files.length === 0) return;
+
+      file = files[0];
+
+      let reader = new FileReader();
+      reader.onload = e => {
+        // pre-process data
+        let binary = "";
+        let bytes = new Uint8Array(e.target.result);
+        let length = bytes.byteLength;
+        for (let i = 0; i < length; i++) {
+          binary += String.fromCharCode(bytes[i]);
+        }
+
+        /* read workbook */
+        let wb = XLSX.read(binary, {
+          type: "binary",
+          cellDates: true,
+          dateNF: "yyyy-mm-dd"
+        });
+
+        /* grab first sheet */
+        let wsname = wb.SheetNames[0];
+        let ws = wb.Sheets[wsname];
+
+        /* Data json */
+        let json = XLSX.utils.sheet_to_json(ws);
+        let checkMSSV = false;
+        let keyMSSV = "mssv";
+        for (const key in json[0]) {
+          if (key.toLowerCase() === keyMSSV) {
+            keyMSSV = key;
+            checkMSSV = true;
+          }
+        }
+
+        if (!checkMSSV) {
+          this.$message.error("Không có cột dữ liệu MSSV");
+        } else {
+          this.$set(this, "dataImport", []);
+          json.forEach(value => {
+            this.dataImport.push(value[keyMSSV]);
+          });
+        }
+      };
+
+      reader.readAsArrayBuffer(file);
+    },
+    async addStudentImport() {
+      let data = [];
+      if (!this.dataImport[0]) {
+        this.$message.error("Chưa có dữ liệu");
+      } else if (this.dataImport[0]['mssv']) {
+        data = this.dataImport.map(v => v['mssv']);
+      } else {
+        data = this.dataImport;
+      }
+      await apiClassMember
+        .create(
+          localStorage.getItem("token_user"),
+          data,
+          this.roomId,
+          this.override,
+          "mssv"
+        )
+        .then(res => {
+          this.$set(
+            this,
+            "dataImport",
+            res.data.map(v => {
+              return { mssv: v.mssv, status: v.status };
+            })
+          );
+          let listSuccess = res.data.filter(v => v.status === 1);
+          this.$store.commit("addNewMember", listSuccess);
+          this.$message.success("Thêm thành viên thành công");
+        })
+        .catch(() => this.$message.error("Không thể gửi yêu cầu đến máy chú"));
+    },
+    filterDataImport() {
+      if (this.dataImport[0] && this.dataImport[0].status == undefined) {
+        return this.dataImport;
+      }
+      return this.dataImport.filter(x => {
+        if (this.statusFilter.fail && x.status === 0) {
+          return true;
+        } else if (this.statusFilter.success && x.status === 1) {
+          return true;
+        } else if (this.statusFilter.duplicate && x.status === 2) {
+          return true;
+        }
+        return false;
+      });
+    }
+  },
+  computed: {
+    linkInvite() {
+      return `${window.location.origin}/c/${this.classSubject.id}?key=${this.classSubject.key}`;
     }
   },
   created() {
@@ -209,13 +558,14 @@ export default {
       .number-student {
         font-size: 16px;
         color: var(--color-primary);
-        margin-right: 20px;
+        margin-right: 10px;
       }
       .material-icons {
-        font-size: 30px;
+        font-size: 26px;
         color: var(--color-primary);
         cursor: pointer;
         user-select: none;
+        margin-left: 10px;
       }
     }
     border-bottom: 1px solid var(--color-primary);
@@ -234,7 +584,7 @@ export default {
           .select-box {
             border: 1px solid #dcdcdc;
             padding: 4px 14px;
-            display: block;
+            //display: block;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -315,6 +665,182 @@ export default {
           cursor: pointer;
           user-select: none;
           svg {
+          }
+        }
+      }
+    }
+  }
+}
+
+.form-box {
+  z-index: 1500;
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  .overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    background-color: rgba(#000, 0.2);
+  }
+  form {
+    min-width: 400px;
+    max-width: 90%;
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%);
+    .form-block {
+      box-shadow: 7px 7px 14px rgba(#000, 0.2), -3px -3px 7px rgba(#ddd, 1);
+    }
+    .group-row {
+      margin-top: 18px;
+      .title {
+        font-weight: 500;
+        font-size: 16px;
+        margin-right: 16px;
+        .required {
+          color: red;
+        }
+      }
+    }
+  }
+}
+
+#form-invite-import {
+  .form-block {
+    position: absolute;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    box-shadow: 7px 7px 14px rgba(#000, 0.2), -3px -3px 7px rgba(#ddd, 1);
+    .group-row {
+      margin-top: 14px;
+      &.flex {
+        display: flex;
+        align-items: center;
+      }
+      &.table {
+        position: relative;
+        height: 30vh;
+        overflow-y: auto;
+      }
+      label {
+        font-weight: 500;
+        margin-right: 15px;
+        width: max-content;
+      }
+      input {
+        padding: 8px 16px;
+        border: 1px solid #bbbbbb;
+        outline: none;
+        margin-right: 20px;
+      }
+      button {
+        padding: 6px 18px 4px;
+        font-size: 14px;
+        border-radius: 0;
+        margin-right: 10px;
+      }
+      .status-details {
+        display: flex;
+        align-items: center;
+        margin-right: 24px;
+        cursor: pointer;
+        &.success {
+          &::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            background: var(--color-success);
+            margin-right: 5px;
+          }
+        }
+        &.fail {
+          &::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            background: var(--color-danger);
+            margin-right: 5px;
+          }
+        }
+
+        &.required {
+          cursor: unset;
+          &::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            background: var(--color-primary);
+            margin-right: 5px;
+          }
+        }
+        &.duplicate {
+          &::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            background: var(--color-purple);
+            margin-right: 5px;
+          }
+        }
+        &.line-through {
+          text-decoration-line: line-through;
+        }
+      }
+      .table-import {
+        position: absolute;
+        top: 0;
+        left: 0;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 12px;
+        tr {
+          th.danger {
+            color: red;
+          }
+          th.required {
+            color: var(--color-primary);
+          }
+
+          th,
+          td {
+            border: 1px solid #dddddd;
+            font-size: 14px;
+            padding: 8px;
+            text-align: center;
+          }
+          th {
+            font-weight: 600;
+            user-select: none;
+          }
+          &:nth-child(even) {
+            background-color: #dddddd;
+          }
+          &.success {
+            td {
+              color: var(--color-success);
+              font-weight: 500;
+            }
+          }
+          &.fail {
+            td {
+              color: var(--color-danger);
+            }
+          }
+          &.duplicate {
+            td {
+              color: var(--color-purple);
+            }
           }
         }
       }
