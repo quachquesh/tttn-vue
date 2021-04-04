@@ -103,7 +103,7 @@ html, body, * {
       &.active {
         label {
           color: var(--color-primary);
-          font-size: 13px;
+          font-size: 12px;
           top: 0;
           left: 10px;
           transform: translateY(-50%);
@@ -127,7 +127,7 @@ html, body, * {
         &:focus {
           & ~ label {
             color: var(--color-primary);
-            font-size: 13px;
+            font-size: 12px;
             top: 0;
             left: 10px;
             transform: translateY(-50%);
@@ -194,12 +194,14 @@ html, body, * {
       &:focus {
         border: 2px solid var(--color-primary);
         & ~ label {
-          font-size: 12px;
-          font-weight: 600;
           color: var(--color-primary);
-          top: 0px;
+          font-size: 12px;
+          top: 0;
           left: 10px;
           transform: translateY(-50%);
+          background-color: #fff;
+          padding: 3px 7px;
+          user-select: none;
         }
       }
       // &.valid {

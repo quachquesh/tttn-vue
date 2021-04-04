@@ -10,9 +10,13 @@ import lang from "element-ui/lib/locale/lang/vi";
 import locale from "element-ui/lib/locale";
 import { DataTables } from "vue-data-tables";
 
+import ClickOut from "clickout-event";
+
 locale.use(lang);
 Vue.use(ElementUI);
 Vue.use(DataTables);
+
+Vue.use(ClickOut);
 
 Vue.config.productionTip = false;
 Vue.prototype.$customjs = custom;

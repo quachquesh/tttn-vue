@@ -38,8 +38,8 @@ export default {
   },
   lockAccount(token, studentId) {
     return axios().patch(
-      "/student/lock",
-      { id: studentId },
+      "/student/lock/" + studentId,
+      {},
       {
         headers: { Authorization: "Bearer " + token }
       }
@@ -47,8 +47,8 @@ export default {
   },
   unlockAccount(token, studentId) {
     return axios().patch(
-      "/student/unlock",
-      { id: studentId },
+      "/student/unlock/" + studentId,
+      {},
       {
         headers: { Authorization: "Bearer " + token }
       }

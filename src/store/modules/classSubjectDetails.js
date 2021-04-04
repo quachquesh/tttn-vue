@@ -33,8 +33,15 @@ const mutations = {
   setClassLecturer(state, data) {
     Vue.set(state, "classLecturer", data);
   },
-  addNewMember(statue, data) {
+  addNewMember(state, data) {
     Vue.set(state, "classMembers", [...state.classMembers, ...data]);
+  },
+  deleteMemberByMemberId(state, member_id) {
+    state.classMembers.forEach((member, index) => {
+      if (member.member_id == member_id) {
+        state.classMembers.splice(index, 1);
+      }
+    });
   }
 };
 const actions = {};

@@ -27,6 +27,18 @@ export default {
     zIndex: {
       default: 3000
     }
+  },
+  beforeCreate() {
+    document.querySelector("body").style.overflowY = "hidden";
+    document.querySelector("body").style.overflowX = "hidden";
+  },
+  watch: {
+    loading() {
+      if (this.loading == false) {
+        document.querySelector("body").style.overflowY = "auto";
+        document.querySelector("body").style.overflowX = "auto";
+      }
+    }
   }
 };
 </script>

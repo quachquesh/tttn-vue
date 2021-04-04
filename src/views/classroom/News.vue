@@ -872,7 +872,6 @@ export default {
               transition: linear 0.1s;
               user-select: none;
               position: relative;
-              user-select: none;
               svg {
                 width: 20px;
                 height: 20px;

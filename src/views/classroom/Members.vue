@@ -58,18 +58,16 @@
           <ul class="list-students">
             <li class="item first">
               <div class="left">
-                <input type="checkbox" />
-                <span class="select-option">
-                  <span class="select-box" @click="clickSelectBox($event)">
+                <input type="checkbox" @change="checkBoxAll" />
+                <span class="select-option" @click="clickSelectBox($event)">
+                  <span class="select-box">
                     <span class="content">Tác vụ</span>
                     <span class="material-icons">expand_more</span>
                   </span>
                   <ul class="list-option">
-                    <li class="option">option 1 option 1</li>
-                    <li class="option">option 2</li>
-                    <li class="option">option 3</li>
-                    <li class="option">option 4</li>
-                    <li class="option">option 5</li>
+                    <li class="option">Gửi email</li>
+                    <li class="option">Ẩn</li>
+                    <li class="option" @click="confirmDestroyList">Xóa</li>
                   </ul>
                 </span>
               </div>
@@ -84,13 +82,17 @@
                 </el-tooltip>
               </div>
             </li>
+
             <li
               class="item"
               v-for="member in $store.state.CLASSSUBJECTDETAILS.classMembers"
               :key="member.id"
             >
               <div class="left">
-                <input type="checkbox" />
+                <input
+                  type="checkbox"
+                  @click.stop="checkBoxStudent($event, member.member_id)"
+                />
                 <span class="avt">
                   <img src="/assets/img/hacker.png" />
                 </span>
@@ -98,7 +100,7 @@
                   member.first_name + " " + member.last_name
                 }}</span>
               </div>
-              <div class="right">
+              <div class="right" @click.stop="optionMember">
                 <span class="dots">
                   <svg focusable="false" viewBox="0 0 24 24" class="NMm5M">
                     <path
@@ -106,6 +108,23 @@
                     ></path>
                   </svg>
                 </span>
+                <ul class="mini-menu">
+                  <li class="item">Gửi email cho học sinh</li>
+                  <li class="item">
+                    Ẩn {{ member.first_name + " " + member.last_name }}
+                  </li>
+                  <li
+                    class="item"
+                    @click="
+                      confirmDestroy(
+                        member.member_id,
+                        member.first_name + ' ' + member.last_name
+                      )
+                    "
+                  >
+                    Xóa
+                  </li>
+                </ul>
               </div>
             </li>
           </ul>
@@ -209,13 +228,25 @@
             <el-switch v-model="override"></el-switch>
           </div>
           <div class="group-row flex">
-            <span class="status-details success" :class="{ 'line-through': !statusFilter.success }" @click="statusFilter.success = !statusFilter.success">
+            <span
+              class="status-details success"
+              :class="{ 'line-through': !statusFilter.success }"
+              @click="statusFilter.success = !statusFilter.success"
+            >
               Thành công
             </span>
-            <span class="status-details fail" :class="{ 'line-through': !statusFilter.fail }" @click="statusFilter.fail = !statusFilter.fail">
+            <span
+              class="status-details fail"
+              :class="{ 'line-through': !statusFilter.fail }"
+              @click="statusFilter.fail = !statusFilter.fail"
+            >
               Đã học lớp khác
             </span>
-            <span class="status-details duplicate" :class="{ 'line-through': !statusFilter.duplicate }" @click="statusFilter.duplicate = !statusFilter.duplicate">
+            <span
+              class="status-details duplicate"
+              :class="{ 'line-through': !statusFilter.duplicate }"
+              @click="statusFilter.duplicate = !statusFilter.duplicate"
+            >
               Đã ở lớp này
             </span>
           </div>
@@ -235,7 +266,7 @@
                 }"
               >
                 <td>{{ index + 1 }}</td>
-                <td>{{ value['mssv'] || value }}</td>
+                <td>{{ value["mssv"] || value }}</td>
               </tr>
             </table>
           </div>
@@ -267,17 +298,119 @@ export default {
         success: true,
         fail: true,
         duplicate: true
-      }
+      },
+      listMemberChecked: []
     };
   },
   methods: {
+    confirmDestroy(member_id, member_name) {
+      this.$confirm("Xác nhận xóa sinh viên " + member_name + "?", "Warning", {
+        confirmButtonText: "Xác nhận",
+        cancelButtonText: "Hủy",
+        type: "warning"
+      })
+        .then(() => {
+          apiClassMember
+            .delete(localStorage.getItem("token_user"), member_id)
+            .then(res => {
+              if (res.data.status) {
+                this.$store.commit("deleteMemberByMemberId", member_id);
+                this.$customjs.showToast({
+                  title: "Thành công",
+                  message: res.data.message
+                });
+              } else {
+                this.$customjs.showToast({
+                  title: "Thất bại",
+                  message: res.data.message,
+                  type: 1
+                });
+              }
+            })
+            .catch(() => this.$message.error("Không thể gửi yêu cầu"));
+        })
+        .catch(() => {});
+    },
+    confirmDestroyList() {
+      if (this.listMemberChecked.length > 0) {
+        this.$confirm("Xác nhận xóa danh sách sinh viên?", "Warning", {
+          confirmButtonText: "Xác nhận",
+          cancelButtonText: "Hủy",
+          type: "warning"
+        })
+          .then(() => {
+            apiClassMember
+              .deleteList(
+                localStorage.getItem("token_user"),
+                this.listMemberChecked
+              )
+              .then(res => {
+                if (res.data.status) {
+                  res.data.data.forEach(member_id => {
+                    this.$store.commit("deleteMemberByMemberId", member_id);
+                  });
+                  this.$customjs.showToast({
+                    title: "Thành công",
+                    message: res.data.message
+                  });
+                } else {
+                  this.$customjs.showToast({
+                    title: "Thất bại",
+                    message: res.data.message,
+                    type: 1
+                  });
+                }
+              })
+              .catch(() => this.$message.error("Không thể gửi yêu cầu"));
+          })
+          .catch(() => {});
+      }
+    },
+    checkBoxStudent(event, member_id) {
+      document.querySelector(
+        ".list-students .item.first input[type='checkbox']"
+      ).checked = false;
+
+      if (event.target.checked) {
+        this.listMemberChecked.push(member_id);
+      } else {
+        this.listMemberChecked.forEach((member, index) => {
+          if (member === member_id) {
+            this.listMemberChecked.splice(index, 1);
+            return true;
+          }
+        });
+      }
+    },
+    checkBoxAll(event) {
+      if (event.target.checked) {
+        this.$set(this, "listMemberChecked", []);
+        this.$store.getters.getClassMembers.forEach(member => {
+          this.listMemberChecked.push(member.member_id);
+        });
+      } else {
+        this.$set(this, "listMemberChecked", []);
+      }
+      document
+        .querySelectorAll(".list-students .item input[type='checkbox']")
+        .forEach(el => {
+          el.checked = event.target.checked;
+        });
+    },
+    optionMember(event) {
+      let element = event.target;
+      while (!element.classList.contains("right")) {
+        element = element.parentElement;
+      }
+      element.classList.toggle("active");
+    },
     addStudent() {
       this.formAddStudent = true;
       this.$store
         .dispatch("reqGetAllStudent", localStorage.getItem("token_user"))
         .then(res => {
           this.$store.commit("setDataStudent", res.data);
-          this.$message.success("load danh sách sinh viên thành công");
+          // this.$message.success("load danh sách sinh viên thành công");
         })
         .catch(() => {
           this.$message.error("load danh sách sinh viên thất bại");
@@ -441,8 +574,8 @@ export default {
       let data = [];
       if (!this.dataImport[0]) {
         this.$message.error("Chưa có dữ liệu");
-      } else if (this.dataImport[0]['mssv']) {
-        data = this.dataImport.map(v => v['mssv']);
+      } else if (this.dataImport[0]["mssv"]) {
+        data = this.dataImport.map(v => v["mssv"]);
       } else {
         data = this.dataImport;
       }
@@ -522,9 +655,9 @@ export default {
       display: flex;
       // justify-content: center;
       align-items: center;
-      padding: 8px 0px;
+      padding: 8px 0;
       .avt {
-        margin: 0px 16px;
+        margin: 0 16px;
         img {
           height: 40px;
           object-fit: cover;
@@ -577,7 +710,7 @@ export default {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0px;
+      padding: 12px 0;
       &.first {
         .select-option {
           position: relative;
@@ -597,10 +730,10 @@ export default {
             list-style: none;
             top: 100%;
             left: 28px;
-            padding: 8px 0px;
+            padding: 8px 0;
             width: max-content;
             background-color: #fff;
-            box-shadow: 0px 2px 2px rgba(#000, 0.3), 0px 2px 5px rgba(#000, 0.3);
+            box-shadow: 0 2px 2px rgba(#000, 0.3), 0 2px 5px rgba(#000, 0.3);
             user-select: none;
             transform: translateY(30px);
             opacity: 0;
@@ -638,6 +771,7 @@ export default {
         input[type="checkbox"] {
           width: 18px;
           height: 18px;
+          cursor: pointer;
         }
         .avt {
           height: 36px;
@@ -660,11 +794,56 @@ export default {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        position: relative;
+        border-radius: 50%;
         .dots {
-          width: 24px;
+          width: 36px;
           cursor: pointer;
+          padding: 6px 8px;
+          border-radius: 50%;
+          transition: linear 0.1s;
           user-select: none;
+          &:hover {
+            background-color: #ececec;
+            path {
+              fill: var(--color-primary);
+            }
+          }
+          &:active {
+            background-color: #dcdcdc;
+          }
           svg {
+          }
+        }
+        &.active .mini-menu {
+          visibility: unset;
+          opacity: 1;
+          transform: translateY(0);
+        }
+        .mini-menu {
+          position: absolute;
+          top: 100%;
+          right: 0;
+          width: max-content;
+          box-shadow: 0 2px 3px rgba(#000, 0.3);
+          padding: 8px 0;
+          background-color: #fff;
+          z-index: 1;
+          transform: translateY(30px);
+          opacity: 0;
+          visibility: hidden;
+          transition: linear 0.2s;
+          .item {
+            padding: 8px 24px 8px 16px;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            &:hover {
+              background-color: #ddd;
+            }
+            &:active {
+              background-color: #aaa;
+            }
           }
         }
       }

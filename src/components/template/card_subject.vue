@@ -43,7 +43,12 @@
         >
           <h3 class="card-title">{{ dataClass.name }}</h3>
         </el-tooltip>
-        <span class="card-description"><span style="font-weight: 500">{{ dataClass.subject_description }}</span>: {{ dataClass.subject_name }}</span>
+        <span class="card-description"
+          ><span style="font-weight: 500">{{
+            dataClass.subject_description
+          }}</span
+          >: {{ dataClass.subject_name }}</span
+        >
       </div>
       <div class="card-body">
         <span>{{ dataClass.description }}</span>

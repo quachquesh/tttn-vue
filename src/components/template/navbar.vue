@@ -96,11 +96,8 @@
           <!-- Đăng nhập mới hiện -->
           <span
             class="material-icons"
-            @click="
-              isActiveAddClass = !isActiveAddClass;
-              isActiveNotify = false;
-              isActiveUser = false;
-            "
+            @click="isActiveAddClass = !isActiveAddClass"
+            @clickout="isActiveAddClass = false"
             >add</span
           >
           <ul
@@ -119,7 +116,11 @@
             >
               Tạo môn học
             </li>
-            <li class="list-item" @click="openFormCreateClass()" v-if="$store.state.USER.dataUser.role">
+            <li
+              class="list-item"
+              @click="openFormCreateClass()"
+              v-if="$store.state.USER.dataUser.role"
+            >
               Tạo lớp học
             </li>
             <router-link
@@ -132,7 +133,7 @@
                 v-if="$store.state.USER.dataUser.role == 'admin'"
                 @click="navigate"
               >
-                Tạo tài khoản
+                Quản lý tài khoản
               </li>
             </router-link>
           </ul>
@@ -142,11 +143,8 @@
           <!-- switch notifications_active khi có thông báo -->
           <span
             class="material-icons"
-            @click="
-              isActiveNotify = !isActiveNotify;
-              isActiveAddClass = false;
-              isActiveUser = false;
-            "
+            @click="isActiveNotify = !isActiveNotify"
+            @clickout="isActiveNotify = false"
             >notifications</span
           >
           <ul
@@ -162,11 +160,8 @@
           <!-- switch user_active khi có thông báo -->
           <span
             class="material-icons"
-            @click="
-              isActiveUser = !isActiveUser;
-              isActiveAddClass = false;
-              isActiveNotify = false;
-            "
+            @click="isActiveUser = !isActiveUser"
+            @clickout="isActiveUser = false"
             >account_circle</span
           >
           <ul
@@ -442,7 +437,11 @@ export default {
                 this.dataSubjectAll.forEach(subject => {
                   if (subject.id === res.data.data.subject_id) {
                     this.$set(res.data.data, "subject_name", subject.name);
-                    this.$set(res.data.data, "subject_description", subject.description);
+                    this.$set(
+                      res.data.data,
+                      "subject_description",
+                      subject.description
+                    );
                     this.$store.commit("addClassSubject", res.data.data);
                     return true;
                   }

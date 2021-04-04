@@ -30,10 +30,27 @@
     <div class="table-list-import">
       <div class="header">
         <div class="left">
-          <span class="status-details success" :class="{ 'line-through': !statusFilter.success }" @click="statusFilter.success = !statusFilter.success">Thành công</span>
-          <span class="status-details fail" :class="{ 'line-through': !statusFilter.fail }" @click="statusFilter.fail = !statusFilter.fail">Thất bại, dữ liệu không hợp lệ</span>
-          <span class="status-details duplicate" :class="{ 'line-through': !statusFilter.duplicate }" @click="statusFilter.duplicate = !statusFilter.duplicate">Đã tồn tại</span>
-          <span class="status-details required">Cột bắt buộc phải có dữ liệu</span>
+          <span
+            class="status-details success"
+            :class="{ 'line-through': !statusFilter.success }"
+            @click="statusFilter.success = !statusFilter.success"
+            >Thành công</span
+          >
+          <span
+            class="status-details fail"
+            :class="{ 'line-through': !statusFilter.fail }"
+            @click="statusFilter.fail = !statusFilter.fail"
+            >Thất bại, dữ liệu không hợp lệ</span
+          >
+          <span
+            class="status-details duplicate"
+            :class="{ 'line-through': !statusFilter.duplicate }"
+            @click="statusFilter.duplicate = !statusFilter.duplicate"
+            >Đã tồn tại</span
+          >
+          <span class="status-details required"
+            >Cột bắt buộc phải có dữ liệu</span
+          >
         </div>
         <div class="right">
           <label for="export-file-name">Tên file: </label>
