@@ -78,16 +78,25 @@
                   content="Sắp xếp theo tên"
                   placement="top"
                 >
-                  <span class="material-icons">sort_by_alpha</span>
+                  <span
+                    class="material-icons"
+                    @click="clickSortMember()"
+                    :style="{
+                      color:
+                        sortMemberType === 1
+                          ? '#f00'
+                          : sortMemberType === 2
+                          ? '#00f'
+                          : '#000'
+                    }"
+                  >
+                    sort_by_alpha
+                  </span>
                 </el-tooltip>
               </div>
             </li>
 
-            <li
-              class="item"
-              v-for="member in $store.state.CLASSSUBJECTDETAILS.classMembers"
-              :key="member.id"
-            >
+            <li class="item" v-for="member in sortMembers()" :key="member.id">
               <div class="left">
                 <input
                   type="checkbox"
@@ -299,10 +308,47 @@ export default {
         fail: true,
         duplicate: true
       },
-      listMemberChecked: []
+      listMemberChecked: [],
+      sortMemberType: 0 // 0: không sắp xếp, 1: tăng dần, 2: giảm dần
     };
   },
   methods: {
+    clickSortMember() {
+      this.sortMemberType++;
+      if (this.sortMemberType === 3) {
+        this.sortMemberType = 0;
+      }
+    },
+    sortMembers() {
+      if (this.sortMemberType === 0) {
+        console.log("Không sắp xếp");
+        return this.$store.state.CLASSSUBJECTDETAILS.classMembers;
+      } else if (this.sortMemberType === 1) {
+        let listMember = [...this.$store.getters.getClassMembers];
+        for (let i = 0; i < listMember.length; i++) {
+          for (let j = i + 1; j < listMember.length; j++) {
+            if (listMember[i].last_name > listMember[j].last_name) {
+              let tmp = listMember[i];
+              listMember[i] = listMember[j];
+              listMember[j] = tmp;
+            }
+          }
+        }
+        return listMember;
+      } else {
+        let listMember = [...this.$store.getters.getClassMembers];
+        for (let i = 0; i < listMember.length; i++) {
+          for (let j = i + 1; j < listMember.length; j++) {
+            if (listMember[i].last_name < listMember[j].last_name) {
+              let tmp = listMember[i];
+              listMember[i] = listMember[j];
+              listMember[j] = tmp;
+            }
+          }
+        }
+        return listMember;
+      }
+    },
     confirmDestroy(member_id, member_name) {
       this.$confirm("Xác nhận xóa sinh viên " + member_name + "?", "Warning", {
         confirmButtonText: "Xác nhận",
@@ -630,6 +676,16 @@ export default {
     this.$router.options.nprogress.done();
   }
 };
+
+function compare(a, b) {
+  if (a.first_name + a.last_name < b.first_name + b.last_name) {
+    return -1;
+  }
+  if (a.first_name + a.last_name > b.first_name + b.last_name) {
+    return 1;
+  }
+  return 0;
+}
 </script>
 
 <style lang="scss" scoped>

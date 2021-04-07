@@ -2,7 +2,12 @@
   <div class="grid wide">
     <div class="row">
       <div class="col c-12">
-        <div class="classroom-banner" :style="{backgroundImage: 'url('+ $store.getters.getClassDetails.img +')'}">
+        <div
+          class="classroom-banner"
+          :style="{
+            backgroundImage: 'url(' + $store.getters.getClassDetails.img + ')'
+          }"
+        >
           <div class="banner-body">
             <div class="class-banner-top">
               <h2 class="banner-title">
@@ -101,7 +106,10 @@
                     </span>
                     <transition name="fade" appear v-if="showListMember">
                       <ul class="select-options">
-                        <li class="option-item first" @click="checkbox = !checkbox">
+                        <li
+                          class="option-item first"
+                          @click="checkbox = !checkbox"
+                        >
                           <span class="check-box">
                             <span class="material-icons" v-if="checkbox"
                               >check_box</span
@@ -110,17 +118,19 @@
                               >check_box_outline_blank</span
                             >
                           </span>
-<!--                          <span class="icon">-->
-<!--                            <img src="/assets/img/hacker.png" />-->
-<!--                          </span>-->
+                          <!--                          <span class="icon">-->
+                          <!--                            <img src="/assets/img/hacker.png" />-->
+                          <!--                          </span>-->
                           <span class="content">Tất cả học viên</span>
                         </li>
 
                         <li
-                          v-for="member in $store.state.CLASSSUBJECTDETAILS.classMembers"
+                          v-for="member in $store.state.CLASSSUBJECTDETAILS
+                            .classMembers"
                           :key="member.id"
                           class="option-item"
-                          @click="checkbox = !checkbox">
+                          @click="checkbox = !checkbox"
+                        >
                           <span class="check-box">
                             <span class="material-icons" v-if="checkbox"
                               >check_box</span
@@ -132,7 +142,10 @@
                           <span class="icon">
                             <img src="/assets/img/hacker.png" />
                           </span>
-                          <span class="content">{{ member.first_name }} {{ member.last_name }}</span>
+                          <span class="content"
+                            >{{ member.first_name }}
+                            {{ member.last_name }}</span
+                          >
                         </li>
                       </ul>
                     </transition>
@@ -402,7 +415,11 @@ export default {
     top: 0;
     width: 100%;
     height: 100%;
-    background-image: linear-gradient(to bottom, rgba(#fff, 0.2) -10%, rgba(#fff, 0) 120%);
+    background-image: linear-gradient(
+      to bottom,
+      rgba(#fff, 0.2) -10%,
+      rgba(#fff, 0) 120%
+    );
     z-index: 1;
   }
   .banner-body {

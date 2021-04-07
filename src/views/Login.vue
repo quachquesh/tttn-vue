@@ -155,7 +155,7 @@ export default {
 };
 </script>
 
-<style scoped lang="scss">
+<style lang="scss" scoped>
 .login-box {
   display: flex;
   justify-content: space-around;
@@ -187,8 +187,8 @@ export default {
   }
 }
 
-@media (min-width: 740px) {
-}
+//@media (min-width: 740px) {
+//}
 
 @media (max-width: 739px) {
   #login {
