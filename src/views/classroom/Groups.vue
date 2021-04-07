@@ -33,12 +33,11 @@ export default {
       required: true
     }
   },
-  beforeCreate() {
-    console.log("beforeCreate");
-  },
   created() {
-    console.log("Created", this.name);
-    document.title = `Lớp ${this.$route.params.roomId} - Nhóm - ${this.test}`;
+    document.title = "Nhóm lớp";
+    if (this.$store.getters.getClassDetails.name) {
+      document.title += " " + this.$store.getters.getClassDetails.name;
+    }
     this.$router.options.nprogress.done();
   }
 };

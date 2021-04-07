@@ -15,15 +15,13 @@
             params: { roomId: this.$route.params.roomId }
           }"
           custom
-          v-slot="{ navigate, isExactActive }"
+          v-slot="{ navigate, href, isExactActive }"
         >
-          <li
-            class="middle-item"
-            @click="navigate"
-            :class="isExactActive && 'active'"
-          >
-            <span class="middle-item__content">Bảng tin</span>
-          </li>
+          <a :href="href" @click="navigate">
+            <li class="middle-item" :class="isExactActive && 'active'">
+              <span class="middle-item__content">Bảng tin</span>
+            </li>
+          </a>
         </router-link>
         <router-link
           :to="{
@@ -31,15 +29,13 @@
             params: { roomId: this.$route.params.roomId }
           }"
           custom
-          v-slot="{ navigate, isActive }"
+          v-slot="{ navigate, href, isActive }"
         >
-          <li
-            class="middle-item"
-            @click="navigate"
-            :class="isActive && 'active'"
-          >
-            <span class="middle-item__content">Thảo luận</span>
-          </li>
+          <a :href="href" @click="navigate">
+            <li class="middle-item" :class="isActive && 'active'">
+              <span class="middle-item__content">Thảo luận</span>
+            </li>
+          </a>
         </router-link>
         <router-link
           :to="{
@@ -47,15 +43,13 @@
             params: { roomId: this.$route.params.roomId }
           }"
           custom
-          v-slot="{ navigate, isActive }"
+          v-slot="{ navigate, href, isActive }"
         >
-          <li
-            class="middle-item"
-            @click="navigate"
-            :class="isActive && 'active'"
-          >
-            <span class="middle-item__content">Bài tập</span>
-          </li>
+          <a :href="href" @click="navigate">
+            <li class="middle-item" :class="isActive && 'active'">
+              <span class="middle-item__content">Bài tập</span>
+            </li>
+          </a>
         </router-link>
         <router-link
           :to="{
@@ -63,15 +57,13 @@
             params: { roomId: this.$route.params.roomId }
           }"
           custom
-          v-slot="{ navigate, isActive }"
+          v-slot="{ navigate, href, isActive }"
         >
-          <li
-            class="middle-item"
-            @click="navigate"
-            :class="isActive && 'active'"
-          >
-            <span class="middle-item__content">Thành viên</span>
-          </li>
+          <a :href="href" @click="navigate">
+            <li class="middle-item" :class="isActive && 'active'">
+              <span class="middle-item__content">Thành viên</span>
+            </li>
+          </a>
         </router-link>
         <router-link
           :to="{
@@ -79,15 +71,13 @@
             params: { roomId: this.$route.params.roomId }
           }"
           custom
-          v-slot="{ navigate, isActive }"
+          v-slot="{ navigate, href, isActive }"
         >
-          <li
-            class="middle-item"
-            @click="navigate"
-            :class="isActive && 'active'"
-          >
-            <span class="middle-item__content">Nhóm</span>
-          </li>
+          <a :href="href" @click="navigate">
+            <li class="middle-item" :class="isActive && 'active'">
+              <span class="middle-item__content">Nhóm</span>
+            </li>
+          </a>
         </router-link>
       </ul>
 
@@ -126,15 +116,16 @@
             <router-link
               :to="{ name: 'CreateStudent' }"
               custom
-              v-slot="{ navigate }"
+              v-slot="{ navigate, href }"
             >
-              <li
-                class="list-item"
-                v-if="$store.state.USER.dataUser.role == 'admin'"
-                @click="navigate"
-              >
-                Quản lý tài khoản
-              </li>
+              <a :href="href" @click="navigate">
+                <li
+                  class="list-item"
+                  v-if="$store.state.USER.dataUser.role == 'admin'"
+                >
+                  Quản lý tài khoản
+                </li>
+              </a>
             </router-link>
           </ul>
         </li>
@@ -586,6 +577,11 @@ export default {
       justify-content: center;
       align-items: center;
       height: 100%;
+      a {
+        text-decoration: none;
+        color: #707070;
+        height: 100%;
+      }
       .middle-item {
         height: 100%;
         display: flex;
@@ -701,6 +697,11 @@ export default {
             transform: translateY(90%);
             opacity: 1;
             visibility: unset;
+          }
+
+          a {
+            text-decoration: none;
+            color: #000;
           }
 
           .list-item {

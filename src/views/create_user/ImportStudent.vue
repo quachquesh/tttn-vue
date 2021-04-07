@@ -372,6 +372,7 @@ function doit(fileName) {
         align-items: center;
         margin-right: 24px;
         cursor: pointer;
+        user-select: none;
         &.line-through {
           text-decoration-line: line-through;
         }

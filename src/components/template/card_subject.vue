@@ -94,7 +94,6 @@ export default {
 
 <style lang="scss" scoped>
 $padding: 25px 20px;
-
 .card-outer {
   margin: 0px 20px;
   border-radius: 20px;

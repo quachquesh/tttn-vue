@@ -16,7 +16,10 @@ export default {
     }
   },
   created() {
-    document.title = `Lớp ${this.roomId} - Bài tập`;
+    document.title = "Thảo luận lớp";
+    if (this.$store.getters.getClassDetails.name) {
+      document.title += " " + this.$store.getters.getClassDetails.name;
+    }
     this.$router.options.nprogress.done();
   }
 };

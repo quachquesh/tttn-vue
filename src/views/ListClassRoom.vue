@@ -5,14 +5,18 @@
     <h2 v-if="$store.state.CLASSSUBJECT.classSubjects.length < 1">
       Chưa tham gia lớp học nào
     </h2>
-    <div
+    <router-link
+      v-else
       v-for="classSubject in $store.state.CLASSSUBJECT.classSubjects"
       :key="classSubject.id"
-      @click="clickClassRoom(classSubject.id)"
-      v-else
+      :to="{ name: 'ClassRoom', params: { roomId: classSubject.id } }"
+      custom
+      v-slot="{ navigate, href }"
     >
-      <card-subject :data-class="classSubject" />
-    </div>
+      <a :href="href" @click="navigate">
+        <card-subject :data-class="classSubject" />
+      </a>
+    </router-link>
   </div>
 </template>
 
@@ -28,12 +32,7 @@ export default {
   },
   methods: {
     clickClassRoom: function(id) {
-      this.$router.push({
-        name: "ClassRoom",
-        params: {
-          roomId: id
-        }
-      });
+      this.$router.push({ name: "ClassRoom", params: { roomId: id } });
     }
   },
   components: {
@@ -79,5 +78,9 @@ export default {
 <style lang="scss" scoped>
 #class-room {
   position: relative;
+}
+a {
+  text-decoration: none;
+  color: #000;
 }
 </style>

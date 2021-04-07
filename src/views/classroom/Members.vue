@@ -623,7 +623,10 @@ export default {
     }
   },
   created() {
-    document.title = `Lớp ${this.$route.params.roomId} - Thành viên`;
+    document.title = "Thành viên lớp";
+    if (this.$store.getters.getClassDetails.name) {
+      document.title += " " + this.$store.getters.getClassDetails.name;
+    }
     this.$router.options.nprogress.done();
   }
 };

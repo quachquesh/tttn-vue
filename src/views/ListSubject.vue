@@ -2,13 +2,17 @@
 <template>
   <div id="subject" class="display-grid-card">
     <loading z-index="1500" :loading="loading" />
-    <div
+    <router-link
       v-for="subject in this.$store.state.SUBJECT.subjects"
       :key="subject.id"
-      @click="clickSubject(subject.id)"
+      :to="{ name: 'ListClassRoom', params: { subjectId: subject.id } }"
+      custom
+      v-slot="{ navigate, href }"
     >
-      <card-subject :dataSubject="subject" />
-    </div>
+      <a :href="href" @click="navigate">
+        <card-subject :dataSubject="subject" />
+      </a>
+    </router-link>
   </div>
 </template>
 
@@ -21,11 +25,6 @@ export default {
     return {
       loading: true
     };
-  },
-  methods: {
-    clickSubject(id) {
-      this.$router.push({ name: "ListClassRoom", params: { subjectId: id } });
-    }
   },
   components: {
     Loading,
@@ -49,4 +48,9 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+a {
+  text-decoration: none;
+  color: #000;
+}
+</style>

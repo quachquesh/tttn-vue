@@ -1,5 +1,4 @@
 // import Vue from "vue";
-// import apiUser from "@/apis/user.js";
 
 const state = {
   isClassRoom: false

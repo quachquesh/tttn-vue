@@ -124,7 +124,7 @@ const routes = [
         component: loadView("classroom/News.vue"),
         meta: {
           transition: "slide-down",
-          title: "Lớp học"
+          title: "Bảng tin"
         },
         props: true
       },
@@ -144,7 +144,7 @@ const routes = [
         component: loadView("classroom/Exercise.vue"),
         meta: {
           transition: "slide-down",
-          title: "Lớp học"
+          title: "Bài tập"
         },
         props: true
       },
@@ -154,7 +154,7 @@ const routes = [
         component: loadView("classroom/Groups.vue"),
         meta: {
           transition: "slide-down",
-          title: "Lớp học"
+          title: "Nhóm"
         },
         props: true
       },
@@ -164,7 +164,7 @@ const routes = [
         component: loadView("classroom/Members.vue"),
         meta: {
           transition: "slide-down",
-          title: "Lớp học"
+          title: "Thành viên"
         },
         props: true
       }
