@@ -7,14 +7,12 @@ function headerAuth(token) {
 }
 
 export default {
-  create(token, data, classId, override, type) {
+  create(token, data, classId) {
     return axios().post(
       "/class-member",
       {
         listStudent: data,
-        classId: classId,
-        override: override,
-        type: type
+        classId: classId
       },
       headerAuth(token)
     );

@@ -562,6 +562,7 @@ export default {
     .nav-icon {
       cursor: pointer;
       height: 100%;
+      user-select: none;
       img {
         padding: 12px 0;
         object-fit: cover;

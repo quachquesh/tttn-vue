@@ -12,6 +12,7 @@
     "clickout-event": "^1.1.1",
     "core-js": "^3.6.5",
     "element-ui": "^2.15.1",
+    "js-file-download": "^0.4.12",
     "vue": "^2.6.11",
     "vue-data-tables": "^3.4.5",
     "vue-nprogress": "^0.2.0",

@@ -41,33 +41,30 @@ export default {
   },
   async created() {
     document.title = "Danh sách lớp học";
-    if (this.$store.getters.getUserRole) {
-      this.$store
-        .dispatch("apiGetClassSubject", [
-          localStorage.getItem("token_user"),
-          this.subjectId
-        ])
-        .then(res => {
-          this.$store.commit("setDataClassSubject", res.data);
-          this.$store.commit("setSubjectId", this.subjectId);
-          this.loading = false;
-        })
-        .catch(() => {
-          this.$message.error("Không thể gửi yêu cầu đến máy chủ");
-        });
-    } else {
-      this.$store
-        .dispatch(
-          "apiGetClassSubjectMember",
-          localStorage.getItem("token_user")
-        )
-        .then(res => {
-          this.$store.commit("setDataClassSubject", res.data);
-          this.loading = false;
-        })
-        .catch(() => {
-          this.$message.error("Không thể gửi yêu cầu đến máy chủ");
-        });
+    let token = localStorage.getItem("token_user");
+    if (token) {
+      if (this.$store.getters.getUserRole) {
+        this.$store
+          .dispatch("apiGetClassSubject", [token, this.subjectId])
+          .then(res => {
+            this.$store.commit("setDataClassSubject", res.data);
+            this.$store.commit("setSubjectId", this.subjectId);
+            this.loading = false;
+          })
+          .catch(() => {
+            this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+          });
+      } else {
+        this.$store
+          .dispatch("apiGetClassSubjectMember", token)
+          .then(res => {
+            this.$store.commit("setDataClassSubject", res.data);
+            this.loading = false;
+          })
+          .catch(() => {
+            this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+          });
+      }
     }
     // $store.getters.getUserRole
     this.$router.options.nprogress.done();

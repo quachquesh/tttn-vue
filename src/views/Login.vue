@@ -159,8 +159,12 @@ export default {
 .login-box {
   display: flex;
   justify-content: space-around;
-  align-items: start;
-  padding: 50px 350px 0;
+  padding: 0 10% 0;
+  flex-wrap: wrap;
+  .form-gv-box,
+  .form-sv-box {
+    padding: 50px 50px;
+  }
 }
 .form-box {
   display: flex;

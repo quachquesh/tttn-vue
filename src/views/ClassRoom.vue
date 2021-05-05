@@ -5,10 +5,7 @@
       <div class="row">
         <div class="col c-12">
           <transition name="fade" mode="out-in" appear>
-            <router-view
-              :classSubject="classSubject"
-              :subject="subject"
-            ></router-view>
+            <router-view></router-view>
           </transition>
         </div>
       </div>
@@ -27,9 +24,7 @@ export default {
   },
   data() {
     return {
-      loading: true,
-      classSubject: {},
-      subject: {}
+      loading: true
     };
   },
   components: {
@@ -39,20 +34,21 @@ export default {
     await apiClassSubject
       .getAllInfo(localStorage.getItem("token_user"), this.roomId)
       .then(res => {
+        this.$store.commit("setClassNotifies", res.data.notifies);
         this.$store.commit("setClassSubjectDetails", res.data.classSubject);
         this.$store.commit("setSubjectDetails", res.data.subject);
         this.$store.commit("setClassMember", res.data.classMembers);
         this.$store.commit("setClassLecturer", res.data.classLecturer);
-        this.$set(
-          this,
-          "classSubject",
-          this.$store.state.CLASSSUBJECTDETAILS.classSubject
-        );
-        this.$set(
-          this,
-          "subject",
-          this.$store.state.CLASSSUBJECTDETAILS.subject
-        );
+        // this.$set(
+        //   this,
+        //   "classSubject",
+        //   this.$store.state.CLASSSUBJECTDETAILS.classSubject
+        // );
+        // this.$set(
+        //   this,
+        //   "subject",
+        //   this.$store.state.CLASSSUBJECTDETAILS.subject
+        // );
         this.loading = false;
       })
       .catch(() => this.$message.error("Không thể gửi yêu cầu đến máy chủ"));

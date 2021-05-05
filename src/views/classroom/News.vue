@@ -79,7 +79,7 @@
               <div
                 class="post-notify-collapse"
                 v-if="postNotifyBox"
-                @click="postNotifyBox = false"
+                @click="showNotifyBox()"
               >
                 <div class="left">
                   <span class="icon">
@@ -96,76 +96,114 @@
               <div class="post-notify-full" v-else>
                 <div class="header">
                   <div class="title">Dành cho</div>
-                  <div class="select-options-box">
+                  <div
+                    class="select-options-box"
+                    :class="{ disable: !$store.getters.getUserRole }"
+                    @clickout="showListMember = false"
+                  >
                     <span
                       class="select-box"
-                      @click="showListMember = !showListMember"
+                      @click="
+                        $store.getters.getUserRole
+                          ? (showListMember = !showListMember)
+                          : (showListMember = false)
+                      "
                     >
-                      <span class="content">Tất cả sinh viên</span>
+                      <span class="content">{{
+                        $store.getters.getUserRole
+                          ? "Chọn sinh viên"
+                          : "Tất cả sinh viên"
+                      }}</span>
                       <span class="material-icons">arrow_drop_down</span>
                     </span>
-                    <transition name="fade" appear v-if="showListMember">
-                      <ul class="select-options">
-                        <li
-                          class="option-item first"
-                          @click="checkbox = !checkbox"
-                        >
-                          <span class="check-box">
-                            <span class="material-icons" v-if="checkbox"
-                              >check_box</span
-                            >
-                            <span class="material-icons" v-else
-                              >check_box_outline_blank</span
-                            >
-                          </span>
-                          <!--                          <span class="icon">-->
-                          <!--                            <img src="/assets/img/hacker.png" />-->
-                          <!--                          </span>-->
-                          <span class="content">Tất cả học viên</span>
-                        </li>
+                    <ul class="select-options active" v-show="showListMember">
+                      <li
+                        class="option-item first active"
+                        @click="cbxNotifySelectAll($event, notifySelects)"
+                      >
+                        <span class="check-box">
+                          <span class="material-icons checked">check_box</span>
+                          <span class="material-icons unchecked"
+                            >check_box_outline_blank</span
+                          >
+                        </span>
+                        <span class="content">Tất cả sinh viên</span>
+                      </li>
 
-                        <li
-                          v-for="member in $store.state.CLASSSUBJECTDETAILS
-                            .classMembers"
-                          :key="member.id"
-                          class="option-item"
-                          @click="checkbox = !checkbox"
+                      <li
+                        v-for="member in notifySelects"
+                        :key="member.id"
+                        class="option-item"
+                        @click="cbxNotifySelect($event, member)"
+                      >
+                        <span class="check-box">
+                          <span class="material-icons" v-if="member.isNotify"
+                            >check_box</span
+                          >
+                          <span class="material-icons" v-else
+                            >check_box_outline_blank</span
+                          >
+                        </span>
+                        <span class="icon">
+                          <img src="/assets/img/hacker.png" />
+                        </span>
+                        <el-tooltip
+                          class="item"
+                          effect="dark"
+                          :content="member.first_name + ' ' + member.last_name"
+                          placement="right"
                         >
-                          <span class="check-box">
-                            <span class="material-icons" v-if="checkbox"
-                              >check_box</span
-                            >
-                            <span class="material-icons" v-else
-                              >check_box_outline_blank</span
-                            >
-                          </span>
-                          <span class="icon">
-                            <img src="/assets/img/hacker.png" />
-                          </span>
                           <span class="content"
                             >{{ member.first_name }}
                             {{ member.last_name }}</span
                           >
-                        </li>
-                      </ul>
-                    </transition>
+                        </el-tooltip>
+                      </li>
+                    </ul>
                   </div>
                 </div>
-                <div class="body" :class="{ active: notifyBody }">
+                <div class="body" :class="{ active: dataNotify.content != '' }">
                   <textarea
                     name=""
                     class="notify-content"
-                    @input="notifyBody = $event.target.value != ''"
+                    v-model="dataNotify.content"
                   ></textarea>
                   <span class="line"></span>
                   <label>Nội dung thông báo cho lớp học</label>
                 </div>
+                <div class="files">
+                  <ul class="list-files">
+                    <li
+                      class="file-items"
+                      v-for="(file, index) in dataNotify.listFiles"
+                      :key="index"
+                    >
+                      <span class="file-name">{{ file.name }}</span>
+                      <span
+                        class="btn-remove material-icons"
+                        @click="removeNotifyFile(index, dataNotify.listFiles)"
+                        >highlight_off</span
+                      >
+                    </li>
+                  </ul>
+                </div>
                 <div class="footer">
                   <div class="left">
-                    <div class="btn btn-light" @click="postNotifyFile($event)">
+                    <div
+                      class="btn btn-light"
+                      @click="$refs.fileNotify.click()"
+                    >
                       <span class="material-icons">attach_file</span>
                       <span class="content">Thêm</span>
                     </div>
+                    <input
+                      ref="fileNotify"
+                      @change="postNotifyFile"
+                      type="file"
+                      multiple
+                      class="fileNotify"
+                      style="display: none"
+                    />
                   </div>
                   <div class="right">
                     <div
@@ -174,10 +212,7 @@
                     >
                       Hủy
                     </div>
-                    <div
-                      class="btn btn-primary"
-                      @click="postNotifyUpload($event)"
-                    >
+                    <div class="btn btn-primary" @click="submitNotify($event)">
                       Đăng
                     </div>
                   </div>
@@ -185,76 +220,164 @@
               </div>
             </div>
             <!--  -->
+            <div v-if="$store.state.CLASSSUBJECTDETAILS.notifies.length == 0">
+              Chưa có thông báo
+            </div>
             <div class="list-notify">
-              <div class="notify-box">
+              <div
+                class="notify-box"
+                v-for="(notify, index) in $store.state.CLASSSUBJECTDETAILS
+                  .notifies"
+                :key="notify.id"
+              >
                 <div class="notify-main">
                   <div class="header">
                     <div class="icon">
                       <img src="/assets/img/hacker.png" />
                     </div>
                     <div class="name-time">
-                      <div class="name">Nguyễn Quốc Trung</div>
-                      <div class="time">23 tháng 3</div>
+                      <div class="name">
+                        {{
+                          notify.author.first_name +
+                            " " +
+                            notify.author.last_name
+                        }}
+                      </div>
+                      <div class="time">
+                        {{
+                          formatTime(
+                            notify.created_at,
+                            notify.created_at == notify.updated_at
+                          )
+                        }}{{
+                          notify.created_at == notify.updated_at
+                            ? ""
+                            : " (Đã chỉnh sửa " +
+                              formatTime(notify.updated_at) +
+                              ")"
+                        }}
+                      </div>
                     </div>
-                    <div class="dots" @click.stop="clickDots($event)">
+                    <div
+                      class="dots"
+                      @click.stop="clickDots($event)"
+                      v-if="notify.author.id == $store.getters.getUserId"
+                    >
                       <svg focusable="false" viewBox="0 0 24 24" class=" NMm5M">
                         <path
                           d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
                         ></path>
                       </svg>
                       <ul class="list-menu">
-                        <li class="item">Chỉnh sửa</li>
-                        <li class="item">Xóa</li>
+                        <li
+                          class="item"
+                          @click="clickEditNotify(notify, index)"
+                        >
+                          Chỉnh sửa
+                        </li>
+                        <li
+                          class="item"
+                          @click="deleteNotify(notify.id, index)"
+                        >
+                          Xóa
+                        </li>
                       </ul>
                     </div>
                   </div>
                   <div class="content">
-                    Lorem ipsum dolor sit amet consectetur adipisicing elit.
-                    Harum, aliquam incidunt perferendis saepe laboriosam
-                    obcaecati cupiditate, voluptates, consectetur non quaerat
-                    in. Tenetur, excepturi tempora labore perspiciatis a
-                    doloremque alias veniam. Lorem ipsum dolor sit amet
-                    consectetur adipisicing elit. Amet, blanditiis laborum.
-                    Aliquid autem voluptate ipsum qui fugiat commodi ducimus!
-                    Saepe itaque deserunt aliquam enim nisi quas tempora
-                    similique asperiores tenetur.
+                    {{ notify.content }}
+                  </div>
+                  <div class="files">
+                    <ul class="list-files">
+                      <li
+                        class="file-items"
+                        v-for="file in notify.files"
+                        :key="file.id"
+                        @click="downloadFile(file.link, file.file_name)"
+                      >
+                        <div class="file-name">{{ file.file_name }}</div>
+                        <span class="material-icons">file_download</span>
+                      </li>
+                    </ul>
                   </div>
                 </div>
                 <div class="notify-comment">
-                  <div class="number-comment" @click="clickShowComment($event)">
+                  <div
+                    class="number-comment"
+                    @click="clickShowComment($event)"
+                    v-if="notify.comment.length > 0"
+                  >
                     <span class="material-icons">people_alt</span>
-                    <div class="number">3 nhận xét về lớp học</div>
+                    <div class="number">
+                      {{ notify.comment.length }} nhận xét
+                    </div>
                   </div>
                   <div
                     class="comment-box"
-                    v-for="(cmt, index) in dataComments"
-                    :key="index"
+                    v-for="(cmt, cmtIndex) in notify.comment"
+                    :key="cmt.id"
                   >
                     <div class="left">
                       <img src="/assets/img/hacker.png" />
                     </div>
                     <div class="right">
                       <div class="name-time">
-                        <span class="name">{{ cmt.name }}</span>
-                        <span class="time">{{ cmt.time }}</span>
+                        <span class="name">{{
+                          cmt.author.first_name + " " + cmt.author.last_name
+                        }}</span>
+                        <span class="time">
+                          {{
+                            formatTime(
+                              cmt.created_at,
+                              cmt.created_at == cmt.updated_at
+                            )
+                          }}
+                          {{
+                            cmt.created_at == cmt.updated_at
+                              ? ""
+                              : " (Đã chỉnh sửa " +
+                                formatTime(cmt.updated_at) +
+                                ")"
+                          }}
+                        </span>
                       </div>
                       <span class="content">
                         {{ cmt.content }}
                       </span>
                     </div>
-                    <span class="dots" @click.stop="clickDots($event)">
+                    <span
+                      class="dots"
+                      @click.stop="clickDots($event)"
+                      v-if="cmt.author.id == $store.getters.getUserId"
+                    >
                       <svg focusable="false" viewBox="0 0 24 24" class=" NMm5M">
                         <path
                           d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"
                         ></path>
                       </svg>
                       <ul class="list-menu">
-                        <li class="item">Chỉnh sửa</li>
-                        <li class="item">Xóa</li>
+                        <li
+                          class="item"
+                          @click="clickEditCmt(cmt, index, cmtIndex)"
+                        >
+                          Chỉnh sửa
+                        </li>
+                        <li
+                          class="item"
+                          @click="deleteComment(cmt.id, index, cmtIndex)"
+                        >
+                          Xóa
+                        </li>
                       </ul>
                     </span>
                   </div>
-                  <div class="input-comment-box">
+                  <div
+                    class="input-comment-box"
+                    :style="{
+                      borderTop:
+                        notify.comment.length > 0 ? '1px solid #dcdcdc' : ''
+                    }"
+                  >
                     <div class="icon">
                       <img src="/assets/img/hacker.png" />
                     </div>
@@ -273,6 +396,7 @@
                           height="24"
                           viewBox="0 0 24 24"
                           class=" NMm5M hhikbc"
+                          @click="submitComment($event, notify)"
                         >
                           <path
                             fill="currentColor"
@@ -292,10 +416,194 @@
         </div>
       </div>
     </div>
+
+    <!--    FORM EDIT COMMENT-->
+    <transition name="fade">
+      <div class="form-edit hidden" id="form-edit-comment">
+        <div class="overlay" @click="hiddenFormEdit('form-edit-comment')"></div>
+        <div class="form-box">
+          <div class="form-block">
+            <h3 class="form-title">Chỉnh sửa nhận xét</h3>
+            <!--            form-group-->
+            <div class="input-box valid">
+              <span
+                class="input"
+                role="textbox"
+                contenteditable="plaintext-only"
+                @input="editCommentInput($event)"
+              ></span>
+              <label>Nội dung chỉnh sửa</label>
+            </div>
+            <div class="form-btn-group">
+              <button
+                class="btn btn-danger"
+                @click.prevent="hiddenFormEdit('form-edit-comment')"
+              >
+                Hủy
+              </button>
+              <button
+                class="btn btn-success"
+                style="margin-left: 15px"
+                @click="submitEditComment"
+              >
+                Sửa
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!--    FORM EDIT POST-->
+    <transition name="fade">
+      <div class="form-edit hidden" id="form-edit-notify">
+        <div class="overlay" @click="hiddenFormEdit('form-edit-notify')"></div>
+        <div class="form-box">
+          <div class="form-block">
+            <h3 class="form-title">Chỉnh sửa thông báo</h3>
+            <div class="post-notify-full">
+              <div class="header">
+                <div class="title">Dành cho</div>
+                <div
+                  class="select-options-box"
+                  :class="{ disable: !$store.getters.getUserRole }"
+                  @clickout="dataEditNotify.showListMember = false"
+                >
+                  <span
+                    class="select-box"
+                    @click="
+                      $store.getters.getUserRole
+                        ? (dataEditNotify.showListMember = !dataEditNotify.showListMember)
+                        : (dataEditNotify.showListMember = false)
+                    "
+                  >
+                    <span class="content">{{
+                      $store.getters.getUserRole
+                        ? "Chọn sinh viên"
+                        : "Tất cả sinh viên"
+                    }}</span>
+                    <span class="material-icons">arrow_drop_down</span>
+                  </span>
+                  <ul
+                    class="select-options active"
+                    v-show="dataEditNotify.showListMember"
+                  >
+                    <li
+                      class="option-item first active"
+                      @click="
+                        cbxNotifySelectAll($event, dataEditNotify.listMembers)
+                      "
+                    >
+                      <span class="check-box">
+                        <span class="material-icons checked">check_box</span>
+                        <span class="material-icons unchecked"
+                          >check_box_outline_blank</span
+                        >
+                      </span>
+                      <span class="content">Tất cả sinh viên</span>
+                    </li>
+
+                    <li
+                      v-for="member in dataEditNotify.listMembers"
+                      :key="member.id"
+                      class="option-item"
+                      @click="cbxNotifySelect($event, member)"
+                    >
+                      <span class="check-box">
+                        <span class="material-icons" v-if="member.isNotify"
+                          >check_box</span
+                        >
+                        <span class="material-icons" v-else
+                          >check_box_outline_blank</span
+                        >
+                      </span>
+                      <span class="icon">
+                        <img src="/assets/img/hacker.png" />
+                      </span>
+                      <el-tooltip
+                        class="item"
+                        effect="dark"
+                        :content="member.first_name + ' ' + member.last_name"
+                        placement="right"
+                      >
+                        <span class="content"
+                          >{{ member.first_name }} {{ member.last_name }}</span
+                        >
+                      </el-tooltip>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div
+                class="body"
+                :class="{ active: dataEditNotify.data.content != '' }"
+              >
+                <textarea
+                  name=""
+                  class="notify-content"
+                  v-model="dataEditNotify.data.content"
+                ></textarea>
+                <span class="line"></span>
+                <label>Nội dung thông báo cho lớp học</label>
+              </div>
+              <div class="files">
+                <ul class="list-files">
+                  <li
+                    class="file-items"
+                    v-for="(file, index) in dataEditNotify.listFiles"
+                    :key="index"
+                  >
+                    <span class="file-name">{{ file.name }}</span>
+                    <span
+                      class="btn-remove material-icons"
+                      @click="removeNotifyFile(index, dataEditNotify.listFiles)"
+                      >highlight_off</span
+                    >
+                  </li>
+                </ul>
+              </div>
+              <div class="footer">
+                <div class="left">
+                  <div
+                    class="btn btn-light"
+                    @click="$refs.fileEditNotify.click()"
+                  >
+                    <span class="material-icons">attach_file</span>
+                    <span class="content">Thêm</span>
+                  </div>
+                  <input
+                    ref="fileEditNotify"
+                    @change="editNotifyChangeFile"
+                    type="file"
+                    multiple
+                    class="fileNotify"
+                    style="display: none"
+                  />
+                </div>
+                <div class="right">
+                  <div
+                    class="btn btn-light"
+                    @click="hiddenFormEdit('form-edit-notify')"
+                  >
+                    Hủy
+                  </div>
+                  <div class="btn btn-primary" @click="submitEditNotify">
+                    Sửa
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
 <script>
+import apiNotify from "@/api/notify";
+import apiDownload from "@/api/download";
+const FileDownload = require("js-file-download");
 export default {
   props: {
     roomId: {
@@ -308,35 +616,93 @@ export default {
       postNotifyBox: true,
       checkbox: false,
       showListMember: false,
-      notifyBody: false,
-      dataComments: [
-        {
-          name: "Nguyễn Quốc Trung",
-          time: "20:23",
-          content: "comment bla bla"
-        },
-        {
-          name: "Nguyễn Quốc Trung 2",
-          time: "23:11 2 tháng 3",
-          content: `comment bla bla comment bla bla comment bla bla comment bla bla comment bla bla comment bla bla comment bla bla comment bla bla`
-        },
-        {
-          name: "Nguyễn Quốc Trung 3",
-          time: "20:23",
-          content: "comment bla bla asdsad sa dsa sda"
-        }
-      ]
+      notifySelects: [], // Danh sách sinh viên nhận thông báo
+      dataNotify: {
+        content: "",
+        listFiles: [],
+        listMember: [] // list id member
+      },
+      dataEditCmt: {},
+      dataEditNotify: {
+        listMembers: [],
+        listFiles: [],
+        data: {},
+        index: "",
+        showListMember: false
+      }
     };
   },
   methods: {
-    toast() {
-      let type = Math.floor(Math.random() * 4);
-      this.$customjs.showToast({
-        title: "Lỗi đăng nhập",
-        message: "Tên tài khoản hoặc mật khẩu không chính xác",
-        type: type,
-        time: 3000
-      });
+    downloadFile(filePath, fileName) {
+      let token = localStorage.getItem("token_user");
+      if (token) {
+        apiDownload
+          .getFile(token, filePath)
+          .then(res => {
+            FileDownload(res.data, fileName);
+          })
+          .catch(() => this.$message.error("Lỗi kêt nối"));
+      }
+    },
+    formatTime(time, showHour = true) {
+      let timePost = new Date(time);
+      let timePostMiliSecond = timePost.getTime();
+      let timeNow = new Date();
+      let timeNowMiliSecond = timeNow.getTime();
+
+      let yearText = "";
+      if (timePost.getFullYear() != timeNow.getFullYear()) {
+        yearText = ", " + timePost.getFullYear();
+      }
+
+      // Check hơn 48h chưa
+      if (timeNowMiliSecond - timePostMiliSecond > 86400000 * 2) {
+        let hour = timePost.getHours();
+        let minute = timePost.getMinutes();
+        if (showHour) {
+          return `${timePost.getDate()} tháng ${timePost.getMonth() +
+            1}${yearText} lúc ${hour < 10 ? "0" + hour : hour}:${
+            minute < 10 ? "0" + minute : minute
+          }`;
+        } else {
+          return `${timePost.getDate()} tháng ${timePost.getMonth() +
+            1}${yearText}`;
+        }
+      } else if (timeNowMiliSecond - timePostMiliSecond > 86400000) {
+        // 24h - 48h
+        let hour = timePost.getHours();
+        let minute = timePost.getMinutes();
+        // Check ngày hôm qua
+        if (timeNow.getDate() - timePost.getDate() < 2) {
+          return `Hôm qua lúc ${hour < 10 ? "0" + hour : hour}:${
+            minute < 10 ? "0" + minute : minute
+          }`;
+        } else {
+          if (showHour) {
+            return `${timePost.getDate()} tháng ${timePost.getMonth() +
+              1}${yearText} lúc ${hour < 10 ? "0" + hour : hour}:${
+              minute < 10 ? "0" + minute : minute
+            }`;
+          } else {
+            return `${timePost.getDate()} tháng ${timePost.getMonth() +
+              1}${yearText}`;
+          }
+        }
+      } else {
+        let time = timeNowMiliSecond - timePostMiliSecond;
+        if (time < 1000) {
+          return "vừa xong";
+        } else if (time < 60000) {
+          // 1p
+          return `${Math.floor(time / 1000)} giây trước`;
+        } else if (time < 3600000) {
+          // 1h
+          return `${Math.floor(time / 1000 / 60)} phút trước`;
+        } else {
+          // 24h
+          return `${Math.floor(time / 1000 / 60 / 60)} giờ trước`;
+        }
+      }
     },
     copyClassKey() {
       navigator.clipboard
@@ -357,13 +723,274 @@ export default {
           }
         );
     },
-    postNotifyFile() {},
+    submitEditNotify(event) {
+      this.$customjs.clickBtnAnimation(event);
+      if (this.dataEditNotify.data == "") {
+        this.$customjs.showToast({
+          title: "Lỗi",
+          message: "Chưa nhập nội dung thông báo",
+          type: 1,
+          time: 3000
+        });
+      } else {
+        let token = localStorage.getItem("token_user");
+        if (token) {
+          let formData = new FormData();
+          formData.append("content", this.dataEditNotify.data.content);
+          let indexFile_old = 0;
+          let indexFile_new = 0;
+          this.dataEditNotify.listFiles.forEach(file => {
+            if (file.id) {
+              formData.append("listFiles_old[" + indexFile_old + "]", file.id);
+              indexFile_old++;
+            } else {
+              formData.append("listFiles_new[" + indexFile_new + "]", file);
+              indexFile_new++;
+            }
+          });
+          // Lấy list member_id của các member được nhận thông báo
+          if (this.$store.getters.getUserRole) {
+            let listMembers = [];
+            this.dataEditNotify.listMembers.forEach(member => {
+              if (member.isNotify) {
+                listMembers.push(member.member_id);
+              }
+            });
+            listMembers.forEach((member, key) => {
+              formData.append("listMembers[" + key + "]", member);
+            });
+          }
+          apiNotify
+            .update(token, formData, this.dataEditNotify.data.id)
+            .then(res => {
+              if (res.data.status) {
+                this.$store.commit("updateNotify", {
+                  index: this.dataEditNotify.index,
+                  data: res.data.data
+                });
+                document
+                  .getElementById("form-edit-notify")
+                  .classList.add("hidden");
+              } else {
+                this.$customjs.showToast({
+                  title: "Thất bại",
+                  message: res.data.message,
+                  time: 3000,
+                  type: 1
+                });
+              }
+            })
+            .catch(() => this.$message.error("Lỗi kết nối"));
+        }
+      }
+    },
+    editNotifyChangeFile() {
+      this.$refs.fileEditNotify.files.forEach(file => {
+        this.dataEditNotify.listFiles.push(file);
+      });
+      this.$refs.fileEditNotify.value = "";
+    },
+    clickEditNotify(notify, index) {
+      this.$set(this.dataEditNotify, "data", {});
+      this.$set(this.dataEditNotify, "listMembers", []);
+      this.$set(this.dataEditNotify, "listFiles", []);
+      // file
+      for (const key in notify.files) {
+        this.$set(this.dataEditNotify.listFiles, key, {});
+        for (const fileKey in notify.files[key]) {
+          this.$set(
+            this.dataEditNotify.listFiles[key],
+            fileKey,
+            notify.files[key][fileKey]
+          );
+        }
+        this.$set(
+          this.dataEditNotify.listFiles[key],
+          "name",
+          this.dataEditNotify.listFiles[key]["file_name"]
+        );
+        this.$delete(this.dataEditNotify.listFiles[key], "file_name");
+      }
+      // data
+      this.$set(this.dataEditNotify.data, "id", notify.id);
+      this.$set(this.dataEditNotify.data, "content", notify.content);
+      // list members
+      let token = localStorage.getItem("token_user");
+      if (token && this.$store.getters.getUserRole) {
+        apiNotify
+          .getListMember(token, notify.id)
+          .then(res => {
+            let memberClass = this.$store.getters.getClassMembers;
+            let memberNotify = res.data;
+            memberClass.forEach(member => {
+              let index = this.dataEditNotify.listMembers.push({});
+              for (const key in member) {
+                this.$set(
+                  this.dataEditNotify.listMembers[index - 1],
+                  key,
+                  member[key]
+                );
+              }
+              this.$set(
+                this.dataEditNotify.listMembers[index - 1],
+                "isNotify",
+                false
+              );
+              // Check danh sách nhận thông báo
+              memberNotify.forEach((value, key) => {
+                if (member["member_id"] == value["member_id"]) {
+                  this.$set(
+                    this.dataEditNotify.listMembers[index - 1],
+                    "isNotify",
+                    true
+                  );
+                  this.$delete(memberNotify, key);
+                }
+              });
+            });
+          })
+          .catch(() => this.$message.error("Lỗi kết nối"));
+      }
+
+      this.$set(this.dataEditNotify, "index", index);
+      document.getElementById("form-edit-notify").classList.remove("hidden");
+    },
+    deleteNotify(notifyId, index) {
+      let token = localStorage.getItem("token_user");
+      if (token) {
+        this.$confirm("Xác nhận xóa thông báo?", "Cảnh báo", {
+          confirmButtonText: "Xác nhận",
+          cancelButtonText: "Hủy",
+          type: "warning"
+        })
+          .then(() => {
+            apiNotify
+              .delete(token, this.$store.getters.getClassDetails.id, notifyId)
+              .then(res => {
+                if (res.data.status) {
+                  this.$store.commit("deleteNotify", index);
+                } else {
+                  this.$customjs.showToast({
+                    title: "Thất bại",
+                    message: res.data.message,
+                    time: 3000,
+                    type: 1
+                  });
+                }
+              })
+              .catch(() =>
+                this.$message.error("Không thể gửi yêu cầu đến máy chủ")
+              );
+          })
+          .catch(() => {});
+      }
+    },
+    submitNotify(event) {
+      this.$customjs.clickBtnAnimation(event);
+      if (this.dataNotify.content == "") {
+        this.$customjs.showToast({
+          title: "Lỗi",
+          message: "Chưa nhập nội dung thông báo",
+          type: 1,
+          time: 3000
+        });
+      } else {
+        let token = localStorage.getItem("token_user");
+        if (token) {
+          // Lấy list member_id của các member được nhận thông báo
+          if (this.$store.getters.getUserRole) {
+            this.dataNotify.listMember = [];
+            this.notifySelects.forEach(member => {
+              if (member.isNotify) {
+                this.dataNotify.listMember.push(member.member_id);
+              }
+            });
+          }
+          let formData = new FormData();
+          formData.append("content", this.dataNotify.content);
+          this.dataNotify.listFiles.forEach((value, key) => {
+            formData.append("listFiles[" + key + "]", value);
+          });
+          this.dataNotify.listMember.forEach((value, key) => {
+            formData.append("listMember[" + key + "]", value);
+          });
+          apiNotify
+            .create(token, this.$store.getters.getClassDetails.id, formData)
+            .then(res => {
+              if (res.data.status) {
+                this.$customjs.showToast({
+                  title: "Thành công",
+                  message: res.data.message
+                });
+                let dataCreate = res.data.data;
+                dataCreate["author"] = this.$store.getters.getDataUser;
+                this.$store.commit("addNotify", dataCreate);
+                // reset value
+                this.dataNotify.content = "";
+                this.dataNotify.listFiles = [];
+                document
+                  .querySelector(".post-notify-full .body")
+                  .classList.remove("active");
+              } else {
+                this.$customjs.showToast({
+                  title: "Thất bại",
+                  message: res.data.message,
+                  time: 3000,
+                  type: 1
+                });
+              }
+            })
+            .catch(() => this.$message.error("Lỗi kết nối"));
+        }
+      }
+    },
+    cbxNotifySelect(event, member) {
+      let cbxParent = event.target;
+      while (!cbxParent.classList.contains("select-options")) {
+        cbxParent = cbxParent.parentElement;
+      }
+
+      let cbxSelectAll = cbxParent.querySelector(".option-item.first");
+      cbxSelectAll.classList.remove("active");
+      this.$set(member, "isNotify", !member.isNotify);
+    },
+    cbxNotifySelectAll(event, listMember) {
+      let cbxParent = event.target;
+      while (!cbxParent.classList.contains("select-options")) {
+        cbxParent = cbxParent.parentElement;
+      }
+
+      let cbxSelectAll = cbxParent.querySelector(".option-item.first");
+      if (cbxSelectAll.classList.contains("active")) {
+        cbxSelectAll.classList.remove("active");
+        listMember.forEach(member => {
+          this.$set(member, "isNotify", false);
+        });
+      } else {
+        cbxSelectAll.classList.add("active");
+        listMember.forEach(member => {
+          this.$set(member, "isNotify", true);
+        });
+      }
+    },
+    showNotifyBox() {
+      this.postNotifyBox = false;
+      this.$store.getters.getClassMembers.forEach(member => {
+        this.$set(member, "isNotify", true);
+        this.notifySelects.push(member);
+      });
+    },
+    postNotifyFile() {
+      this.$refs.fileNotify.files.forEach(file => {
+        this.dataNotify.listFiles.push(file);
+      });
+      this.$refs.fileNotify.value = "";
+    },
+    removeNotifyFile(index, listFiles) {
+      listFiles.splice(index, 1);
+    },
     postNotifyCancel(event) {
       this.postNotifyBox = true;
-      this.notifyBody = false;
-      this.$customjs.clickBtnAnimation(event);
-    },
-    postNotifyUpload(event) {
       this.$customjs.clickBtnAnimation(event);
     },
     commentInput(event) {
@@ -372,6 +999,130 @@ export default {
       } else {
         event.target.parentElement.classList.add("valid");
       }
+    },
+    editCommentInput(event) {
+      this.dataEditCmt.content = event.target.innerText;
+      if (!this.dataEditCmt.content) {
+        event.target.parentElement.classList.remove("valid");
+      } else {
+        event.target.parentElement.classList.add("valid");
+      }
+    },
+    submitComment(event, notify) {
+      let element = event.target;
+      while (!element.classList.contains("input-box")) {
+        element = element.parentElement;
+      }
+      let input = element.querySelector(".input");
+      let token = localStorage.getItem("token_user");
+      if (token && input.innerText != "") {
+        apiNotify
+          .createReply(token, notify.id, input.innerText)
+          .then(res => {
+            if (res.data.status) {
+              res.data.data["author"] = this.$store.getters.getDataUser;
+              res.data.data["comment"] = [];
+              notify.comment.push(res.data.data);
+              input.innerText = "";
+              input.parentElement.classList.remove("valid");
+            } else {
+              this.$message.error("Có lỗi xảy ra");
+            }
+          })
+          .catch(() =>
+            this.$message.error("Không thể gửi yêu cầu đến máy chủ")
+          );
+      }
+    },
+    deleteComment(replyId, notifyIndex, cmtIndex) {
+      let token = localStorage.getItem("token_user");
+      if (token) {
+        this.$confirm("Xác nhận xóa nhận xét?", "Cảnh báo", {
+          confirmButtonText: "Xác nhận",
+          cancelButtonText: "Hủy",
+          type: "warning"
+        })
+          .then(() => {
+            apiNotify
+              .deleteReply(
+                token,
+                this.$store.getters.getClassDetails.id,
+                replyId
+              )
+              .then(res => {
+                if (res.data.status) {
+                  this.$store.commit("deleteNotifyReply", {
+                    notifyIndex,
+                    cmtIndex
+                  });
+                } else {
+                  this.$customjs.showToast({
+                    title: "Thất bại",
+                    message: res.data.message,
+                    time: 3000,
+                    type: 1
+                  });
+                }
+              })
+              .catch(() =>
+                this.$message.error("Không thể gửi yêu cầu đến máy chủ")
+              );
+          })
+          .catch(() => {});
+      }
+    },
+    submitEditComment(event) {
+      this.$customjs.clickBtnAnimation(event);
+      let token = localStorage.getItem("token_user");
+      if (token) {
+        apiNotify
+          .updateReply(
+            token,
+            this.dataEditCmt.content,
+            this.$store.getters.getClassDetails.id,
+            this.dataEditCmt.id
+          )
+          .then(res => {
+            if (res.data.status) {
+              let cmt = this.dataEditCmt;
+              this.$store.commit("updateNotifyReply", {
+                notifyIndex: cmt.postIndex,
+                cmtIndex: cmt.cmtIndex,
+                cmt: res.data.data
+              });
+              document
+                .getElementById("form-edit-comment")
+                .classList.add("hidden");
+            } else {
+              this.$customjs.showToast({
+                title: "Thất bại",
+                message: res.data.message,
+                time: 3000,
+                type: 1
+              });
+            }
+          })
+          .catch(() => {
+            this.$message.error("Lỗi kết nối");
+          });
+      }
+    },
+    clickEditCmt(cmt, postIndex, cmtIndex) {
+      this.$set(this, "dataEditCmt", {});
+      for (const key in cmt) {
+        this.$set(this.dataEditCmt, key, cmt[key]);
+      }
+      this.$set(this.dataEditCmt, "postIndex", postIndex);
+      this.$set(this.dataEditCmt, "cmtIndex", cmtIndex);
+      document.getElementById("form-edit-comment").classList.remove("hidden");
+      let textBox = document.querySelector(
+        "#form-edit-comment span[role='textbox']"
+      );
+      textBox.innerText = this.dataEditCmt.content;
+      textBox.parentElement.classList.add("valid");
+    },
+    hiddenFormEdit(elementId) {
+      document.getElementById(elementId).classList.add("hidden");
     },
     clickDots(event) {
       let element = event.target;
@@ -622,6 +1373,14 @@ export default {
           .select-options-box {
             position: relative;
             margin-top: 10px;
+            display: inline-block;
+            &.disable {
+              .select-box {
+                user-select: none;
+                cursor: not-allowed;
+                background-color: #e4e4e4;
+              }
+            }
             .select-box {
               display: flex;
               // justify-content: center;
@@ -658,10 +1417,10 @@ export default {
               height: 240px;
               overflow: auto;
               background-color: #fff;
-              padding: 8px 0px;
+              padding: 8px 0;
               border-radius: 5px;
-              box-shadow: 0px 0px 2px rgba(#000, 0.3),
-                0px 0px 5px rgba(#000, 0.1), 0px 2px 2px rgba(#000, 0.3);
+              box-shadow: 0 0 2px rgba(#000, 0.3), 0 0 5px rgba(#000, 0.1),
+                0 2px 2px rgba(#000, 0.3);
               .option-item {
                 padding: 12px 15px;
                 // height: 40px;
@@ -670,11 +1429,31 @@ export default {
                 user-select: none;
                 cursor: pointer;
                 background-color: #fff;
+                &.first {
+                  &.active {
+                    .check-box {
+                      .material-icons.checked {
+                        display: unset;
+                      }
+                      .material-icons.unchecked {
+                        display: none;
+                      }
+                    }
+                  }
+                  .check-box {
+                    .material-icons.checked {
+                      display: none;
+                    }
+                    .material-icons.unchecked {
+                      display: unset;
+                    }
+                  }
+                }
                 &:hover {
                   background-color: #e4e4e4;
                 }
                 .check-box {
-                  color: #696969;
+                  color: #5c5c5c;
                 }
                 .icon {
                   height: 100%;
@@ -765,11 +1544,49 @@ export default {
             transition: linear 0.2s;
           }
         }
+        .files {
+          display: flex;
+          flex-direction: column;
+          margin-top: 10px;
+          .list-files {
+            list-style: none;
+            .file-items {
+              display: flex;
+              align-items: center;
+              position: relative;
+              width: fit-content;
+              padding: 4px 40px 4px 0px;
+              transition: 0.3s;
+              &:hover {
+                background-color: #c6d1ff;
+                .file-name {
+                  color: #000000;
+                }
+                .btn-remove {
+                  opacity: 1;
+                  visibility: unset;
+                }
+              }
+              .file-name {
+                color: #0020ff;
+              }
+              .btn-remove {
+                position: absolute;
+                right: 5px;
+                user-select: none;
+                cursor: pointer;
+                opacity: 0;
+                visibility: hidden;
+                transition: 0.3s;
+              }
+            }
+          }
+        }
         .footer {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          margin-top: 20px;
+          margin-top: 10px;
           .btn {
             padding: 6px 12px;
             font-size: 16px;
@@ -922,10 +1739,44 @@ export default {
             font-size: 14px;
             line-height: 20px;
             margin-right: 12px;
+            white-space: pre-line;
+            overflow-wrap: anywhere;
+          }
+          .files {
+            display: flex;
+            flex-direction: column;
+            margin-top: 10px;
+            .list-files {
+              list-style: none;
+              .file-items {
+                display: flex;
+                align-items: center;
+                position: relative;
+                width: fit-content;
+                user-select: none;
+                cursor: pointer;
+                border: 1px solid #8b8b8b;
+                padding: 6px 45px 6px 16px;
+                margin-top: 10px;
+                border-radius: 30px;
+                transition: 0.3s;
+                &:hover {
+                  background-color: #0d6efd;
+                  color: #fff;
+                }
+                .file-name {
+                }
+                .material-icons {
+                  position: absolute;
+                  right: 12px;
+                  font-size: 20px;
+                  transition: 0.3s;
+                }
+              }
+            }
           }
         }
         .notify-comment {
-          margin-top: 10px;
           .number-comment {
             padding: 6px 16px;
             display: inline-flex;
@@ -934,6 +1785,7 @@ export default {
             user-select: none;
             cursor: pointer;
             margin-bottom: 2px;
+            margin-top: 10px;
             margin-left: 14px;
             border-radius: 5px;
             &:hover {
@@ -994,6 +1846,8 @@ export default {
               .content {
                 margin-top: 6px;
                 margin-right: 16px;
+                white-space: pre-line;
+                overflow-wrap: anywhere;
               }
             }
             .dots {
@@ -1066,7 +1920,6 @@ export default {
             justify-content: flex-start;
             align-items: center;
             height: 100%;
-            border-top: 1px solid #dcdcdc;
             user-select: none;
             .icon {
               height: 36px;
@@ -1129,6 +1982,356 @@ export default {
               }
             }
           }
+        }
+      }
+    }
+  }
+}
+
+.form-edit {
+  position: fixed;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 3000;
+  transition: 0.3s;
+  &.hidden {
+    opacity: 0;
+    visibility: hidden;
+  }
+  .overlay {
+    width: 100%;
+    height: 100%;
+    background: rgba(#000, 0.2);
+    cursor: pointer;
+  }
+  .form-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 360px;
+    box-shadow: 7px 7px 14px rgba(#000, 0.2), -3px -3px 7px #dddddd;
+    .input-box {
+      display: flex;
+      justify-content: flex-start;
+      align-items: center;
+      position: relative;
+      margin-left: 14px;
+      flex: 1;
+      &.valid {
+        label {
+          display: none;
+        }
+        .icon-send {
+          color: var(--color-primary);
+        }
+      }
+      .input {
+        border-radius: 20px;
+        width: 100px;
+        flex: 1;
+        position: relative;
+        outline: none;
+        user-select: text;
+        white-space: pre-wrap;
+        overflow-wrap: break-word;
+        // height: 36px;
+        cursor: text;
+        padding: 10px 18px;
+        font-size: 14px;
+        border: 2px solid rgba(#000, 0.6);
+        &:focus {
+          outline: none;
+          border: 2px solid var(--color-primary);
+        }
+      }
+      label {
+        position: absolute;
+        left: 21px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #777;
+        pointer-events: none;
+        font-size: 14px;
+      }
+    }
+    .form-btn-group {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+  }
+}
+
+#form-edit-notify {
+  .form-box {
+    min-width: 600px;
+    .form-block {
+      padding: 30px 30px;
+    }
+  }
+  .post-notify-full {
+    //padding: 15px 25px;
+    margin-top: 15px;
+    height: 100%;
+    width: 100%;
+    .header {
+      .title {
+        font-weight: 500;
+        color: #777777;
+        font-size: 15px;
+      }
+      .select-options-box {
+        position: relative;
+        margin-top: 10px;
+        display: inline-block;
+        &.disable {
+          .select-box {
+            user-select: none;
+            cursor: not-allowed;
+            background-color: #e4e4e4;
+          }
+        }
+        .select-box {
+          display: flex;
+          // justify-content: center;
+          align-items: center;
+          padding: 8px 8px 8px 16px;
+          background-color: #f8f8f8;
+          border-radius: 5px;
+          cursor: pointer;
+          user-select: none;
+          width: 150px;
+          &:hover {
+            background-color: #e4e4e4;
+          }
+          .content {
+            width: 80%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding: 8px 0px;
+            font-size: 14px;
+          }
+          .material-icons {
+            flex: 1;
+          }
+        }
+        .select-options {
+          position: absolute;
+          z-index: 10;
+          left: 0;
+          bottom: 0;
+          list-style: none;
+          transform: translateY(100%);
+          width: 250px;
+          height: 240px;
+          overflow: auto;
+          background-color: #fff;
+          padding: 8px 0;
+          border-radius: 5px;
+          box-shadow: 0 0 2px rgba(#000, 0.3), 0 0 5px rgba(#000, 0.1),
+            0 2px 2px rgba(#000, 0.3);
+          .option-item {
+            padding: 12px 15px;
+            // height: 40px;
+            display: flex;
+            align-items: center;
+            user-select: none;
+            cursor: pointer;
+            background-color: #fff;
+            &.first {
+              &.active {
+                .check-box {
+                  .material-icons.checked {
+                    display: unset;
+                  }
+                  .material-icons.unchecked {
+                    display: none;
+                  }
+                }
+              }
+              .check-box {
+                .material-icons.checked {
+                  display: none;
+                }
+                .material-icons.unchecked {
+                  display: unset;
+                }
+              }
+            }
+            &:hover {
+              background-color: #e4e4e4;
+            }
+            .check-box {
+              color: #5c5c5c;
+            }
+            .icon {
+              height: 100%;
+              padding: 0px 14px;
+              img {
+                border-radius: 50%;
+                height: 32px;
+              }
+            }
+            &.first {
+              .content {
+                margin-left: 24px;
+                font-weight: 500;
+                font-size: 15px;
+              }
+            }
+            .content {
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+              flex: 1;
+              font-size: 14px;
+              color: #757575;
+              font-weight: 500;
+            }
+          }
+        }
+      }
+    }
+    .body {
+      width: 100%;
+      margin-top: 20px;
+      position: relative;
+      overflow: hidden;
+      border-radius: 5px;
+      background-color: #f8f8f8;
+
+      &.active {
+        label {
+          top: 8px;
+          font-size: 13px;
+        }
+      }
+      .notify-content {
+        background-color: transparent;
+        resize: none;
+        height: 128px;
+        width: 100%;
+        padding: 0 16px 9px;
+        margin-top: 28px;
+        overflow: hidden;
+        border-radius: 5px;
+        border: none;
+        outline: none;
+        position: relative;
+        font-size: 16px;
+        &:focus {
+          border: none;
+          outline: none;
+          & ~ .line {
+            background-color: var(--color-primary);
+            height: 2px;
+          }
+          & ~ label {
+            top: 8px;
+            font-size: 13px;
+            color: var(--color-primary);
+          }
+        }
+      }
+      .line {
+        z-index: 1;
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 1px;
+        background-color: #000;
+        transition: linear 0.2s;
+        will-change: height;
+      }
+      label {
+        position: absolute;
+        left: 16px;
+        top: 23px;
+        pointer-events: none;
+        color: #727272;
+        transition: linear 0.2s;
+      }
+    }
+    .files {
+      display: flex;
+      flex-direction: column;
+      margin-top: 10px;
+      .list-files {
+        list-style: none;
+        .file-items {
+          display: flex;
+          align-items: center;
+          position: relative;
+          width: fit-content;
+          padding: 4px 40px 4px 0px;
+          transition: 0.3s;
+          &:hover {
+            background-color: #c6d1ff;
+            .file-name {
+              color: #000000;
+            }
+            .btn-remove {
+              opacity: 1;
+              visibility: unset;
+            }
+          }
+          .file-name {
+            color: #0020ff;
+          }
+          .btn-remove {
+            position: absolute;
+            right: 5px;
+            user-select: none;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: 0.3s;
+          }
+        }
+      }
+    }
+    .footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 10px;
+      .btn {
+        padding: 6px 12px;
+        font-size: 16px;
+        text-transform: unset;
+        font-weight: 400;
+      }
+      .left {
+        flex: 1;
+        .btn.btn-light {
+          box-shadow: 0px 0px 2px rgba(#000, 0.4);
+          display: inline-flex;
+          justify-content: space-between;
+          align-items: center;
+          color: var(--color-primary);
+          .material-icons {
+            font-size: 18px;
+          }
+          .content {
+            font-weight: 500;
+            padding-left: 4px;
+          }
+        }
+      }
+      .right {
+        display: flex;
+        align-items: center;
+        .btn-light {
+          margin-right: 10px;
+        }
+        .btn-primary {
+          padding: 6px 20px;
+          font-weight: 500;
         }
       }
     }

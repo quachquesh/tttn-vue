@@ -50,6 +50,7 @@
                 <span
                   class="material-icons"
                   @click="formInviteStudentList = true"
+                  style="font-size: 32px;"
                   >group_add</span
                 >
               </el-tooltip>
@@ -57,7 +58,7 @@
           </div>
           <ul class="list-students">
             <li class="item first">
-              <div class="left">
+              <div class="left" v-if="$store.state.USER.dataUser.role">
                 <input type="checkbox" @change="checkBoxAll" />
                 <span class="select-option" @click="clickSelectBox($event)">
                   <span class="select-box">
@@ -71,6 +72,7 @@
                   </ul>
                 </span>
               </div>
+              <div class="left" v-else></div>
               <div class="right">
                 <el-tooltip
                   class="item"
@@ -101,6 +103,7 @@
                 <input
                   type="checkbox"
                   @click.stop="checkBoxStudent($event, member.member_id)"
+                  v-if="$store.state.USER.dataUser.role"
                 />
                 <span class="avt">
                   <img src="/assets/img/hacker.png" />
@@ -109,7 +112,11 @@
                   member.first_name + " " + member.last_name
                 }}</span>
               </div>
-              <div class="right" @click.stop="optionMember">
+              <div
+                class="right"
+                @click.stop="optionMember"
+                v-if="$store.state.USER.dataUser.role"
+              >
                 <span class="dots">
                   <svg focusable="false" viewBox="0 0 24 24" class="NMm5M">
                     <path
@@ -186,7 +193,7 @@
                 v-for="student in $store.state.STUDENT.students"
                 :key="student.mssv"
                 :label="student.mssv"
-                :value="student.id"
+                :value="student.mssv"
               >
                 <span style="float: left; margin-right: 10px;">{{
                   student.mssv
@@ -233,10 +240,6 @@
             </button>
           </div>
           <div class="group-row flex">
-            <label>Chuyển lớp nếu sinh viên học lớp khác: </label>
-            <el-switch v-model="override"></el-switch>
-          </div>
-          <div class="group-row flex">
             <span
               class="status-details success"
               :class="{ 'line-through': !statusFilter.success }"
@@ -249,7 +252,7 @@
               :class="{ 'line-through': !statusFilter.fail }"
               @click="statusFilter.fail = !statusFilter.fail"
             >
-              Đã học lớp khác
+              Thất bại, không tồn tại
             </span>
             <span
               class="status-details duplicate"
@@ -292,9 +295,7 @@ export default {
   props: {
     roomId: {
       required: true
-    },
-    classSubject: {},
-    subject: {}
+    }
   },
   data() {
     return {
@@ -302,7 +303,6 @@ export default {
       formInviteStudentList: false,
       listStudentSelect: [],
       dataImport: [],
-      override: false,
       statusFilter: {
         success: true,
         fail: true,
@@ -321,7 +321,6 @@ export default {
     },
     sortMembers() {
       if (this.sortMemberType === 0) {
-        console.log("Không sắp xếp");
         return this.$store.state.CLASSSUBJECTDETAILS.classMembers;
       } else if (this.sortMemberType === 1) {
         let listMember = [...this.$store.getters.getClassMembers];
@@ -350,7 +349,7 @@ export default {
       }
     },
     confirmDestroy(member_id, member_name) {
-      this.$confirm("Xác nhận xóa sinh viên " + member_name + "?", "Warning", {
+      this.$confirm("Xác nhận xóa sinh viên " + member_name + "?", "Cảnh báo", {
         confirmButtonText: "Xác nhận",
         cancelButtonText: "Hủy",
         type: "warning"
@@ -379,7 +378,7 @@ export default {
     },
     confirmDestroyList() {
       if (this.listMemberChecked.length > 0) {
-        this.$confirm("Xác nhận xóa danh sách sinh viên?", "Warning", {
+        this.$confirm("Xác nhận xóa danh sách sinh viên?", "Cảnh báo", {
           confirmButtonText: "Xác nhận",
           cancelButtonText: "Hủy",
           type: "warning"
@@ -399,6 +398,9 @@ export default {
                     title: "Thành công",
                     message: res.data.message
                   });
+                  document.querySelector(
+                    ".list-students .item input[type='checkbox']"
+                  ).checked = false;
                 } else {
                   this.$customjs.showToast({
                     title: "Thất bại",
@@ -452,15 +454,18 @@ export default {
     },
     addStudent() {
       this.formAddStudent = true;
-      this.$store
-        .dispatch("reqGetAllStudent", localStorage.getItem("token_user"))
-        .then(res => {
-          this.$store.commit("setDataStudent", res.data);
-          // this.$message.success("load danh sách sinh viên thành công");
-        })
-        .catch(() => {
-          this.$message.error("load danh sách sinh viên thất bại");
-        });
+      let token = localStorage.getItem("token_user");
+      if (token) {
+        this.$store
+          .dispatch("reqGetAllStudent", token)
+          .then(res => {
+            this.$store.commit("setDataStudent", res.data);
+            // this.$message.success("load danh sách sinh viên thành công");
+          })
+          .catch(() => {
+            this.$message.error("load danh sách sinh viên thất bại");
+          });
+      }
     },
     async submitAddStudent() {
       await apiClassMember
@@ -474,65 +479,6 @@ export default {
           if (listSuccess.length > 0) {
             this.$store.commit("addNewMember", listSuccess);
             this.$message.success("Thêm thành viên thành công");
-          }
-          // Xử lý sinh viên đã học lớp khác cùng môn
-          let listFailtId = [];
-          let listFail = res.data.filter(x => {
-            if (x.status === 0) {
-              listFailtId.push(x.id);
-              return true;
-            }
-            return false;
-          });
-          let lengthFail = listFail.length;
-          if (lengthFail > 0) {
-            const h = this.$createElement;
-            let mssvFail = [
-              h(
-                "h3",
-                { style: "color: red" },
-                "Bạn có muốn chuyển lớp các sinh viên này?"
-              )
-            ];
-            listFail.forEach((value, index) => {
-              if (index == lengthFail - 1) {
-                mssvFail.push(h("span", null, value.mssv));
-              } else {
-                mssvFail.push(h("span", null, value.mssv + ", "));
-              }
-            });
-            this.$msgbox({
-              title: "Các sinh viên đã học lớp khác",
-              message: h("p", null, mssvFail),
-              showCancelButton: true,
-              confirmButtonText: "OK",
-              cancelButtonText: "Cancel",
-              beforeClose: (action, instance, done) => {
-                if (action === "confirm") {
-                  instance.confirmButtonLoading = true;
-                  instance.confirmButtonText = "Loading...";
-                  apiClassMember
-                    .create(
-                      localStorage.getItem("token_user"),
-                      listFailtId,
-                      this.roomId,
-                      true
-                    )
-                    .then(res => {
-                      let listSuccess = res.data.filter(x => x.status === 1);
-                      this.$store.commit("addNewMember", listSuccess);
-                      this.$message.success("Thêm thành viên thành công");
-                    })
-                    .catch(() =>
-                      this.$message.error("Không thể gửi yêu cầu đến máy chú")
-                    );
-                  done();
-                  instance.confirmButtonLoading = false;
-                } else {
-                  done();
-                }
-              }
-            });
           }
           this.formAddStudent = false;
         })
@@ -626,13 +572,7 @@ export default {
         data = this.dataImport;
       }
       await apiClassMember
-        .create(
-          localStorage.getItem("token_user"),
-          data,
-          this.roomId,
-          this.override,
-          "mssv"
-        )
+        .create(localStorage.getItem("token_user"), data, this.roomId)
         .then(res => {
           this.$set(
             this,
@@ -665,7 +605,8 @@ export default {
   },
   computed: {
     linkInvite() {
-      return `${window.location.origin}/c/${this.classSubject.id}?key=${this.classSubject.key}`;
+      // return `${window.location.origin}/c/${this.classSubject.id}?key=${this.classSubject.key}`;
+      return `${window.location.origin}/c/${this.$store.getters.getSubjectDetails.id}?key=${this.$store.getters.getClassDetails.key}`;
     }
   },
   created() {
@@ -676,19 +617,13 @@ export default {
     this.$router.options.nprogress.done();
   }
 };
-
-function compare(a, b) {
-  if (a.first_name + a.last_name < b.first_name + b.last_name) {
-    return -1;
-  }
-  if (a.first_name + a.last_name > b.first_name + b.last_name) {
-    return 1;
-  }
-  return 0;
-}
 </script>
 
 <style lang="scss" scoped>
+.material-icons {
+  outline: none;
+  border: none;
+}
 @media (min-width: 1024px) {
   .grid.wide {
     width: 800px;
@@ -991,6 +926,7 @@ function compare(a, b) {
         align-items: center;
         margin-right: 24px;
         cursor: pointer;
+        user-select: none;
         &.success {
           &::before {
             content: "";

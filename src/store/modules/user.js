@@ -1,6 +1,7 @@
 import Vue from "vue";
-import apiLecturer from "@/api/lecturer";
-import apiStudent from "@/api/student";
+// import apiLecturer from "@/api/lecturer";
+// import apiStudent from "@/api/student";
+import apiUser from "@/api/user";
 
 const state = {
   token: localStorage.getItem("token_user") || "",
@@ -47,32 +48,17 @@ const actions = {
     let token_user = localStorage.getItem("token_user");
     return new Promise((resolve, reject) => {
       if (token_user) {
-        apiLecturer
-          .userDetails(token_user)
+        apiUser
+          .getDetails(token_user)
           .then(res => {
             commit("setStateLogin", true);
             commit("setDataUser", res.data);
             resolve(res.data);
           })
-          .catch(err => {
-            if (err.response.data.message === "Unauthenticated.") {
-              apiStudent
-                .userDetails(token_user)
-                .then(res => {
-                  commit("setStateLogin", true);
-                  commit("setDataUser", res.data);
-                  resolve(res.data);
-                })
-                .catch(() => {
-                  commit("setStateLogin", false);
-                  localStorage.removeItem("token_user");
-                  reject();
-                });
-            } else {
-              localStorage.removeItem("token_user");
-              commit("setStateLogin", false);
-              reject();
-            }
+          .catch(() => {
+            commit("setStateLogin", false);
+            localStorage.removeItem("token_user");
+            reject();
           });
       } else {
         commit("setStateLogin", false);
@@ -80,6 +66,46 @@ const actions = {
       }
     });
   }
+  // checkLogin({ commit }) {
+  //   let token_user = localStorage.getItem("token_user");
+  //   return new Promise((resolve, reject) => {
+  //     if (token_user) {
+  //       apiLecturer
+  //         .userDetails(token_user)
+  //         .then(res => {
+  //           commit("setStateLogin", true);
+  //           commit("setDataUser", res.data);
+  //           resolve(res.data);
+  //         })
+  //         .catch(err => {
+  //           if (
+  //             err.response.data.message === "Unauthenticated." ||
+  //             err.response.data.message === "Invalid scope(s) provided."
+  //           ) {
+  //             apiStudent
+  //               .userDetails(token_user)
+  //               .then(res => {
+  //                 commit("setStateLogin", true);
+  //                 commit("setDataUser", res.data);
+  //                 resolve(res.data);
+  //               })
+  //               .catch(() => {
+  //                 commit("setStateLogin", false);
+  //                 localStorage.removeItem("token_user");
+  //                 reject();
+  //               });
+  //           } else {
+  //             localStorage.removeItem("token_user");
+  //             commit("setStateLogin", false);
+  //             reject();
+  //           }
+  //         });
+  //     } else {
+  //       commit("setStateLogin", false);
+  //       reject();
+  //     }
+  //   });
+  // }
 };
 
 export default {
