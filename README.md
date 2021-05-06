@@ -1,5 +1,6 @@
 # tttn
-
+## Edit file .env
+```VUE_APP_API=[domain-api]/api/v1```
 ## Project setup
 ```
 npm install
