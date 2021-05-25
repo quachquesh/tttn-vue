@@ -16,6 +16,9 @@ export default {
       headerAuth(token)
     );
   },
+  update(token, id, data) {
+    return axios().put("/class-subject/" + id, data, headerAuth(token));
+  },
   getById(classId) {
     return axios().get("/class-subject/" + classId);
   },

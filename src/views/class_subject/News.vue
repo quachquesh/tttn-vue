@@ -220,8 +220,11 @@
               </div>
             </div>
             <!--  -->
-            <div v-if="$store.state.CLASSSUBJECTDETAILS.notifies.length == 0">
-              Chưa có thông báo
+            <div
+              class="notify-empty"
+              v-if="$store.state.CLASSSUBJECTDETAILS.notifies.length == 0"
+            >
+              Lớp học chưa có thông báo
             </div>
             <div class="list-notify">
               <div
@@ -1623,6 +1626,14 @@ export default {
           }
         }
       }
+    }
+    .notify-empty {
+      width: 100%;
+      margin-top: 40px;
+      display: flex;
+      justify-content: center;
+      font-size: 18px;
+      color: #555555;
     }
 
     .list-notify {

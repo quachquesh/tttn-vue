@@ -27,7 +27,9 @@
           </li>
         </ul>
       </div>
-      <div class="card-footer"></div>
+      <div class="card-footer">
+        <span>Học kỳ {{ dataSubject.semester }}</span>
+      </div>
     </div>
 
     <div class="card-block" v-else-if="$store.getters.getUserRole">
@@ -53,7 +55,9 @@
       <div class="card-body">
         <span>{{ dataClass.description }}</span>
       </div>
-      <div class="card-footer"></div>
+      <div class="card-footer">
+        <span>{{ formatTime(dataClass.semester, dataClass.created_at) }}</span>
+      </div>
     </div>
 
     <div class="card-block" v-else>
@@ -81,14 +85,27 @@
       <div class="card-body">
         <span>{{ dataClass.description }}</span>
       </div>
-      <div class="card-footer"></div>
+      <div class="card-footer">
+        <span>{{ formatTime(dataClass.semester, dataClass.created_at) }}</span>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["dataSubject", "dataClass"]
+  props: ["dataSubject", "dataClass"],
+  methods: {
+    formatTime(semester, time) {
+      let getTime = new Date(time);
+      let year = getTime.getFullYear();
+      if (semester == 1) {
+        return `Học kỳ ${semester}, ${year} - ${year + 1}`;
+      } else {
+        return `Học kỳ ${semester}, ${year - 1} - ${year}`;
+      }
+    }
+  }
 };
 </script>
 
@@ -155,6 +172,13 @@ $padding: 25px 20px;
     .card-footer {
       height: 40px;
       padding: $padding;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      span {
+        font-weight: 600;
+        font-size: 14px;
+      }
     }
   }
 }

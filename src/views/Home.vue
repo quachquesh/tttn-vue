@@ -6,12 +6,19 @@
           this.$store.state.USER.dataUser.role == 'admin'
       "
     />
-    <router-view name="ListClassRoom" v-else></router-view>
+    <router-view name="ListClassSubject" v-else></router-view>
   </div>
 </template>
 
 <script>
-export default {};
+export default {
+  created() {
+    this.$store.commit("setStateSubject", true);
+  },
+  destroyed() {
+    this.$store.commit("setStateSubject", false);
+  }
+};
 </script>
 
 <style></style>

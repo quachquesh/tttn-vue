@@ -44,6 +44,55 @@ const mutations = {
   }
 };
 const actions = {
+  login({ commit }, { username, password }) {
+    return new Promise((resolve, reject) => {
+      apiUser
+        .login(username, password)
+        .then(res => {
+          if (res.data.status) {
+            localStorage.setItem("token_user", res.data.data.token);
+            commit("setDataUser", res.data.data);
+            commit("setStateLogin", true);
+          }
+          resolve(res.data);
+        })
+        .catch(() => {
+          reject();
+        });
+    });
+  },
+  logout({ commit }) {
+    let token_user = localStorage.getItem("token_user");
+    return new Promise((resolve, reject) => {
+      if (token_user) {
+        apiUser
+          .logout(token_user)
+          .then(res => {
+            if (res.data.status) {
+              commit("setStateLogin", false);
+              commit("setDataUser", {
+                id: null,
+                email: null,
+                mssv: null,
+                role: null,
+                isActive: null,
+                first_name: null,
+                last_name: null,
+                sex: null,
+                birthday: null,
+                phone_number: null,
+                address: null
+              });
+              localStorage.removeItem("token_user");
+              resolve(res.data);
+            }
+          })
+          .catch(() => {
+            reject();
+          });
+      }
+    });
+  },
   checkLogin({ commit }) {
     let token_user = localStorage.getItem("token_user");
     return new Promise((resolve, reject) => {

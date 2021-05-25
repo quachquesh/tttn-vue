@@ -6,22 +6,6 @@ export default {
       headers: { Authorization: "Bearer " + token }
     });
   },
-  login(mssv, password) {
-    return axios().post("/student/login", {
-      mssv: mssv,
-      password: password
-    });
-  },
-  logout(token) {
-    return axios().get("/student/logout", {
-      headers: { Authorization: "Bearer " + token }
-    });
-  },
-  userDetails(token) {
-    return axios().get("/student/details", {
-      headers: { Authorization: "Bearer " + token }
-    });
-  },
   createListStudent(token, tableHeader, dataTable) {
     return axios().post(
       "/student/create-list",

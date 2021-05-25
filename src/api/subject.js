@@ -13,6 +13,9 @@ export default {
   get(token) {
     return axios().get("/subject", headerAuth(token));
   },
+  getAll(token) {
+    return axios().get("/subject/all", headerAuth(token));
+  },
   getByUserId(token) {
     return axios().get("/subject/user", headerAuth(token));
   },

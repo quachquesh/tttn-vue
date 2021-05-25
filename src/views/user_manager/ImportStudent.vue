@@ -65,6 +65,7 @@
           <th>STT</th>
           <th class="mssv required">MSSV</th>
           <th class="password">Mật khẩu</th>
+          <th class="classroom required">Lớp</th>
           <th class="first_name required">Họ và tên lót</th>
           <th class="last_name required">Tên</th>
           <th class="phone_number">Số điện thoại</th>
@@ -72,7 +73,10 @@
           <th class="email">Email</th>
           <th class="sex required">Giới tính</th>
           <th class="birthday required">Ngày sinh</th>
-          <th class="password_random" v-if="tableHeader['password_random']">
+          <th
+            class="password_random create"
+            v-if="tableHeader['password_random']"
+          >
             Pass Rand
           </th>
         </tr>
@@ -88,6 +92,7 @@
           <td>{{ index + 1 }}</td>
           <td>{{ value[tableHeader["mssv"][0]] || "" }}</td>
           <td>{{ value[tableHeader["password"][0]] || "" }}</td>
+          <td>{{ value[tableHeader["classroom"][0]] || "" }}</td>
           <td>{{ value[tableHeader["first_name"][0]] || "" }}</td>
           <td>{{ value[tableHeader["last_name"][0]] || "" }}</td>
           <td>{{ value[tableHeader["phone_number"][0]] || "" }}</td>
@@ -161,6 +166,7 @@ export default {
       this.$set(this, "tableHeader", {
         mssv: [null, true, "mssv"],
         password: [null, false, "password", "mật khẩu"],
+        classroom: [null, false, "classroom", "Lớp học", "Lớp"],
         first_name: [null, true, "first_name", "firstname", "họ và tên lót"],
         last_name: [null, true, "last_name", "lastname", "tên"],
         phone_number: [
@@ -449,6 +455,22 @@ function doit(fileName) {
       }
       th.required {
         color: var(--color-primary);
+      }
+      th.create {
+        animation: colorRGB 2s linear infinite;
+      }
+      @keyframes colorRGB {
+        0%,
+        100% {
+          color: #ff0000;
+        }
+        25%,
+        75% {
+          color: #00ff00;
+        }
+        50% {
+          color: #0000ff;
+        }
       }
 
       th,

@@ -6,73 +6,34 @@
         <div class="form-gv-box">
           <form
             class="form-box"
-            @submit.prevent="loginGV($event)"
+            @submit.prevent="login($event)"
             :key="'form-GV'"
           >
             <div class="form-block">
-              <h3 class="form-title">Giảng viên</h3>
+              <h3 class="form-title">Đăng nhập</h3>
               <div class="form-group">
                 <input
-                  type="email"
-                  v-model="formGV.email"
+                  type="text"
+                  v-model="dataLogin.username"
                   @input="eventInput($event)"
                 />
-                <label>Email</label>
+                <label>Tên đăng nhập</label>
               </div>
               <div class="form-group">
                 <input
                   type="password"
-                  v-model="formGV.password"
+                  v-model="dataLogin.password"
                   @input="eventInput($event)"
                 />
                 <label>Mật khẩu</label>
               </div>
               <div class="form-group mb-15">
-                <span class="error-msg">{{ formGV.msgError }}</span>
+                <span class="error-msg">{{ dataLogin.msgError }}</span>
               </div>
               <div class="btn-group">
                 <button
                   @click="$customjs.clickBtnAnimation($event)"
                   class="btn btn-success"
-                >
-                  Đăng nhập
-                </button>
-              </div>
-            </div>
-          </form>
-        </div>
-        <!-- Sinh viên -->
-        <div class="form-sv-box">
-          <form
-            class="form-box SV"
-            @submit.prevent="loginSV()"
-            :key="'form-SV'"
-          >
-            <div class="form-block">
-              <h3 class="form-title">Sinh viên</h3>
-              <div class="form-group">
-                <input
-                  type="text"
-                  v-model="formSV.mssv"
-                  @input="eventInput($event)"
-                />
-                <label>MSSV</label>
-              </div>
-              <div class="form-group">
-                <input
-                  type="password"
-                  v-model="formSV.password"
-                  @input="eventInput($event)"
-                />
-                <label>Mật khẩu</label>
-              </div>
-              <div class="form-group mb-15">
-                <span class="error-msg">{{ formSV.msgError }}</span>
-              </div>
-              <div class="btn-group">
-                <button
-                  @click="$customjs.clickBtnAnimation($event)"
-                  class="btn btn-primary"
                 >
                   Đăng nhập
                 </button>
@@ -86,61 +47,42 @@
 </template>
 
 <script>
-import apiStudent from "@/api/student.js";
-import apiLecturer from "@/api/lecturer.js";
 export default {
   data: function() {
     return {
-      formGV: {
-        email: "",
-        password: "",
-        msgError: ""
-      },
-      formSV: {
-        mssv: "",
+      dataLogin: {
+        username: "",
         password: "",
         msgError: ""
       }
     };
   },
   methods: {
-    async loginGV() {
-      await apiLecturer
-        .login(this.formGV.email, this.formGV.password)
-        .then(res => {
-          if (res.data.status) {
-            localStorage.setItem("token_user", res.data.data.token);
-            this.$store.commit("setDataUser", res.data.data);
-            this.$store.commit("setStateLogin", true);
-            this.$router.push("/");
-          } else {
-            this.formGV.msgError = res.data.message;
-          }
-        })
-        .catch(err => {
-          if (!err.response) this.formGV.msgError = "Lỗi kết nối đến máy chủ";
-        });
-    },
-    async loginSV() {
-      await apiStudent
-        .login(this.formSV.mssv, this.formSV.password)
-        .then(res => {
-          if (res.data.status) {
-            localStorage.setItem("token_user", res.data.data.token);
-            this.$store.commit("setDataUser", res.data.data);
-            this.$store.commit("setStateLogin", true);
-            this.$router.push("/");
-          } else {
-            this.formSV.msgError = res.data.message;
-          }
-        })
-        .catch(err => {
-          if (!err.response) this.formSV.msgError = "Lỗi kết nối đến máy chủ";
-        });
+    login() {
+      if (this.dataLogin.username == "") {
+        this.dataLogin.msgError = "Vui lòng nhập tên đăng nhập";
+      } else if (this.dataLogin.password == "") {
+        this.dataLogin.msgError = "Vui lòng nhập mật khẩu";
+      } else {
+        this.$store
+          .dispatch("login", {
+            username: this.dataLogin.username,
+            password: this.dataLogin.password
+          })
+          .then(res => {
+            if (res.status) {
+              this.$router.push("/");
+            } else {
+              this.formGV.msgError = res.data.message;
+            }
+          })
+          .catch(() => {
+            this.formGV.msgError = "Lỗi kết nối đến máy chủ";
+          });
+      }
     },
     eventInput(event) {
-      this.formSV.msgError = "";
-      this.formGV.msgError = "";
+      this.dataLogin.msgError = "";
       if (event.target.value != "") {
         event.target.parentElement.classList.add("active");
       } else {
@@ -158,9 +100,7 @@ export default {
 <style lang="scss" scoped>
 .login-box {
   display: flex;
-  justify-content: space-around;
-  padding: 0 10% 0;
-  flex-wrap: wrap;
+  justify-content: center;
   .form-gv-box,
   .form-sv-box {
     padding: 50px 50px;

@@ -129,6 +129,18 @@
         <div class="form-group">
           <input
             type="text"
+            required
+            :class="{ valid: dataEdit.classroom }"
+            v-model="dataEdit.classroom"
+          />
+          <label>
+            Lớp
+            <span class="required">*</span>
+          </label>
+        </div>
+        <div class="form-group">
+          <input
+            type="text"
             :class="{ valid: dataEdit.phone_number }"
             v-model="dataEdit.phone_number"
           />
@@ -221,6 +233,11 @@ export default {
           prop: "last_name",
           label: "Tên",
           width: "150"
+        },
+        {
+          prop: "classroom",
+          label: "Lớp",
+          width: "100"
         },
         {
           prop: "sex",
@@ -442,6 +459,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  margin-bottom: 10px;
   .left {
     display: flex;
     align-items: center;

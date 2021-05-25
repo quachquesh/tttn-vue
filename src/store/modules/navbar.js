@@ -1,16 +1,30 @@
 // import Vue from "vue";
 
 const state = {
-  isClassRoom: false
+  isClassSubject: false,
+  isSubject: false,
+  isListClassSubject: false
 };
 const getters = {
-  getIsClassRoom: state => {
-    return state.isClassRoom;
+  getIsClassSubject: state => {
+    return state.isClassSubject;
+  },
+  getIsSubject: state => {
+    return state.isSubject;
+  },
+  getIsListClassSubject: state => {
+    return state.isListClassSubject;
   }
 };
 const mutations = {
-  setStateClassRoom(state, isClassRoom) {
-    state.isClassRoom = isClassRoom;
+  setStateClassSubject(state, isClassSubject) {
+    state.isClassSubject = isClassSubject;
+  },
+  setStateSubject(state, isSubject) {
+    state.isSubject = isSubject;
+  },
+  setStateListClassSubject(state, isListClassSubject) {
+    state.isListClassSubject = isListClassSubject;
   }
 };
 const actions = {};

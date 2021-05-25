@@ -1,15 +1,9 @@
 <template>
   <div>
     <loading z-index="1500" :loading="loading" />
-    <div class="grid wide">
-      <div class="row">
-        <div class="col c-12">
-          <transition name="fade" mode="out-in" appear>
-            <router-view></router-view>
-          </transition>
-        </div>
-      </div>
-    </div>
+    <transition name="fade" mode="out-in" appear>
+      <router-view></router-view>
+    </transition>
   </div>
 </template>
 <script>
@@ -52,10 +46,10 @@ export default {
         this.loading = false;
       })
       .catch(() => this.$message.error("Không thể gửi yêu cầu đến máy chủ"));
-    this.$store.commit("setStateClassRoom", true); // store navbar
+    this.$store.commit("setStateClassSubject", true); // store navbar
   },
   destroyed() {
-    this.$store.commit("setStateClassRoom", false); // store navbar
+    this.$store.commit("setStateClassSubject", false); // store navbar
   }
   // watch: {
   //   $route: {

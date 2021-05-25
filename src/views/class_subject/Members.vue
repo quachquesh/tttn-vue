@@ -58,7 +58,11 @@
           </div>
           <ul class="list-students">
             <li class="item first">
-              <div class="left" v-if="$store.state.USER.dataUser.role">
+              <div
+                class="left"
+                v-if="$store.state.USER.dataUser.role"
+                style="width: unset;"
+              >
                 <input type="checkbox" @change="checkBoxAll" />
                 <span class="select-option" @click="clickSelectBox($event)">
                   <span class="select-box">
@@ -66,35 +70,33 @@
                     <span class="material-icons">expand_more</span>
                   </span>
                   <ul class="list-option">
-                    <li class="option">Gửi email</li>
-                    <li class="option">Ẩn</li>
+                    <li class="option" @click="confirmSendMailList">
+                      Gửi email
+                    </li>
+                    <!--                    <li class="option">Ẩn</li>-->
                     <li class="option" @click="confirmDestroyList">Xóa</li>
                   </ul>
                 </span>
               </div>
               <div class="left" v-else></div>
               <div class="right">
-                <el-tooltip
-                  class="item"
-                  effect="dark"
-                  content="Sắp xếp theo tên"
-                  placement="top"
-                >
-                  <span
-                    class="material-icons"
-                    @click="clickSortMember()"
-                    :style="{
-                      color:
-                        sortMemberType === 1
-                          ? '#f00'
-                          : sortMemberType === 2
-                          ? '#00f'
-                          : '#000'
-                    }"
-                  >
-                    sort_by_alpha
+                <span class="select-option" @click="clickSelectBox($event)">
+                  <span class="select-box">
+                    <span class="content">{{ sortMemberType.label }}</span>
+                    <span class="material-icons">expand_more</span>
                   </span>
-                </el-tooltip>
+                  <ul class="list-option">
+                    <li class="option" @click="clickSortMember(1, 'Tên')">
+                      Sắp xếp tên
+                    </li>
+                    <li class="option" @click="clickSortMember(2, 'Lớp')">
+                      Sắp xếp lớp
+                    </li>
+                    <li class="option" @click="clickSortMember(0, 'Sắp xếp')">
+                      Bỏ sắp xếp
+                    </li>
+                  </ul>
+                </span>
               </div>
             </li>
 
@@ -102,7 +104,7 @@
               <div class="left">
                 <input
                   type="checkbox"
-                  @click.stop="checkBoxStudent($event, member.member_id)"
+                  @click.stop="checkBoxStudent($event, member)"
                   v-if="$store.state.USER.dataUser.role"
                 />
                 <span class="avt">
@@ -111,6 +113,7 @@
                 <span class="name">{{
                   member.first_name + " " + member.last_name
                 }}</span>
+                <span class="classroom">{{ member.classroom }}</span>
               </div>
               <div
                 class="right"
@@ -125,10 +128,12 @@
                   </svg>
                 </span>
                 <ul class="mini-menu">
-                  <li class="item">Gửi email cho học sinh</li>
-                  <li class="item">
-                    Ẩn {{ member.first_name + " " + member.last_name }}
+                  <li class="item" @click="confirmSendMail(member.email)">
+                    Gửi email cho học sinh
                   </li>
+                  <!--                  <li class="item">-->
+                  <!--                    Ẩn {{ member.first_name + " " + member.last_name }}-->
+                  <!--                  </li>-->
                   <li
                     class="item"
                     @click="
@@ -309,43 +314,78 @@ export default {
         duplicate: true
       },
       listMemberChecked: [],
-      sortMemberType: 0 // 0: không sắp xếp, 1: tăng dần, 2: giảm dần
+      sortMemberType: {
+        value: 0, // 0: Không sắp xếp, 1: Tên, 2: lớp
+        type: false, // false: A-Z, true: Z-A
+        label: "Sắp xếp"
+      }
     };
   },
   methods: {
-    clickSortMember() {
-      this.sortMemberType++;
-      if (this.sortMemberType === 3) {
-        this.sortMemberType = 0;
+    clickSortMember(sortValue, sortLabel) {
+      if (this.sortMemberType.value == sortValue) {
+        this.sortMemberType.type = !this.sortMemberType.type;
+      } else {
+        this.sortMemberType.type = false;
       }
+      this.sortMemberType.value = sortValue;
+      this.sortMemberType.label = sortLabel;
     },
     sortMembers() {
-      if (this.sortMemberType === 0) {
+      if (this.sortMemberType.value == 0) {
         return this.$store.state.CLASSSUBJECTDETAILS.classMembers;
-      } else if (this.sortMemberType === 1) {
-        let listMember = [...this.$store.getters.getClassMembers];
-        for (let i = 0; i < listMember.length; i++) {
-          for (let j = i + 1; j < listMember.length; j++) {
-            if (listMember[i].last_name > listMember[j].last_name) {
-              let tmp = listMember[i];
-              listMember[i] = listMember[j];
-              listMember[j] = tmp;
-            }
-          }
+      } else if (this.sortMemberType.value == 1) {
+        // Sắp xếp theo Tên
+        if (!this.sortMemberType.type) {
+          // A-Z
+          return sortMember(
+            this.$store.getters.getClassMembers,
+            "last_name",
+            false
+          );
+        } else {
+          // Z-A
+          return sortMember(
+            this.$store.getters.getClassMembers,
+            "last_name",
+            true
+          );
         }
-        return listMember;
-      } else {
-        let listMember = [...this.$store.getters.getClassMembers];
-        for (let i = 0; i < listMember.length; i++) {
-          for (let j = i + 1; j < listMember.length; j++) {
-            if (listMember[i].last_name < listMember[j].last_name) {
-              let tmp = listMember[i];
-              listMember[i] = listMember[j];
-              listMember[j] = tmp;
-            }
-          }
+      } else if (this.sortMemberType.value == 2) {
+        // Sắp xếp theo Lớp
+        if (!this.sortMemberType.type) {
+          // A-Z
+          return sortMember(
+            this.$store.getters.getClassMembers,
+            "classroom",
+            false
+          );
+        } else {
+          // Z-A
+          return sortMember(
+            this.$store.getters.getClassMembers,
+            "classroom",
+            true
+          );
         }
-        return listMember;
+      }
+    },
+    confirmSendMail(email) {
+      window.open(`https://mail.google.com/mail/u/0/?fs=1&to=${email}&tf=cm`);
+    },
+    confirmSendMailList() {
+      if (this.listMemberChecked.length > 0) {
+        let url = "https://mail.google.com/mail/u/0/?fs=1&bcc=";
+        let length = this.listMemberChecked;
+        this.listMemberChecked.forEach((member, index) => {
+          if (index == length - 1) {
+            url += member.email;
+          } else {
+            url += member.email + ",";
+          }
+        });
+        url += "&tf=cm";
+        window.open(url);
       }
     },
     confirmDestroy(member_id, member_name) {
@@ -384,11 +424,12 @@ export default {
           type: "warning"
         })
           .then(() => {
+            let listDestroy = [];
+            this.listMemberChecked.forEach(member => {
+              listDestroy.push(member.member_id);
+            });
             apiClassMember
-              .deleteList(
-                localStorage.getItem("token_user"),
-                this.listMemberChecked
-              )
+              .deleteList(localStorage.getItem("token_user"), listDestroy)
               .then(res => {
                 if (res.data.status) {
                   res.data.data.forEach(member_id => {
@@ -414,16 +455,16 @@ export default {
           .catch(() => {});
       }
     },
-    checkBoxStudent(event, member_id) {
+    checkBoxStudent(event, member) {
       document.querySelector(
         ".list-students .item.first input[type='checkbox']"
       ).checked = false;
 
       if (event.target.checked) {
-        this.listMemberChecked.push(member_id);
+        this.listMemberChecked.push(member);
       } else {
-        this.listMemberChecked.forEach((member, index) => {
-          if (member === member_id) {
+        this.listMemberChecked.forEach((memb, index) => {
+          if (memb.member_id === member.member_id) {
             this.listMemberChecked.splice(index, 1);
             return true;
           }
@@ -434,7 +475,7 @@ export default {
       if (event.target.checked) {
         this.$set(this, "listMemberChecked", []);
         this.$store.getters.getClassMembers.forEach(member => {
-          this.listMemberChecked.push(member.member_id);
+          this.listMemberChecked.push(member);
         });
       } else {
         this.$set(this, "listMemberChecked", []);
@@ -617,6 +658,30 @@ export default {
     this.$router.options.nprogress.done();
   }
 };
+
+function sortMember(listSort, type, sortType) {
+  let listMember = [...listSort];
+  for (let i = 0; i < listMember.length; i++) {
+    for (let j = i + 1; j < listMember.length; j++) {
+      if (!sortType) {
+        // A-Z
+        if (listMember[i][type] > listMember[j][type]) {
+          let tmp = listMember[i];
+          listMember[i] = listMember[j];
+          listMember[j] = tmp;
+        }
+      } else {
+        // Z-A
+        if (listMember[i][type] < listMember[j][type]) {
+          let tmp = listMember[i];
+          listMember[i] = listMember[j];
+          listMember[j] = tmp;
+        }
+      }
+    }
+  }
+  return listMember;
+}
 </script>
 
 <style lang="scss" scoped>
@@ -710,7 +775,7 @@ export default {
           position: relative;
           .select-box {
             border: 1px solid #dcdcdc;
-            padding: 4px 14px;
+            padding: 4px 7px 4px 14px;
             //display: block;
             display: flex;
             justify-content: space-between;
@@ -718,12 +783,15 @@ export default {
             margin-left: 28px;
             cursor: pointer;
             user-select: none;
+            .content {
+              margin-right: 7px;
+            }
           }
           .list-option {
             position: absolute;
             list-style: none;
-            top: 100%;
-            left: 28px;
+            top: calc(100% + 3px);
+            right: 0;
             padding: 8px 0;
             width: max-content;
             background-color: #fff;
@@ -737,6 +805,7 @@ export default {
               transform: translateY(0px);
               opacity: 1;
               visibility: unset;
+              z-index: 1000;
             }
             cursor: pointer;
             .option {
@@ -762,6 +831,7 @@ export default {
         display: flex;
         justify-content: space-between;
         align-items: center;
+        width: 75%;
         input[type="checkbox"] {
           width: 18px;
           height: 18px;
@@ -782,6 +852,12 @@ export default {
           font-size: 14px;
           font-weight: 500;
           color: #777;
+          flex: 1;
+        }
+        .classroom {
+          color: #777;
+          font-size: 14px;
+          font-weight: 500;
         }
       }
       .right {

@@ -30,6 +30,18 @@
               type="text"
               required
               @input="inputCheck($event)"
+              v-model="dataStudent.classroom"
+            />
+            <label>
+              Lớp
+              <span class="required">*</span>
+            </label>
+          </div>
+          <div class="form-group">
+            <input
+              type="text"
+              required
+              @input="inputCheck($event)"
               v-model="dataStudent.first_name"
             />
             <label>
@@ -130,6 +142,7 @@ export default {
       dataStudent: {
         mssv: "",
         password: "",
+        classroom: "",
         first_name: "",
         last_name: "",
         phone_number: "",

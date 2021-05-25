@@ -2,16 +2,17 @@
 <template>
   <div id="navbar">
     <nav class="navbar">
+      <!-- LEFT -->
       <router-link to="/" custom v-slot="{ navigate }">
         <div class="nav-icon" @click="navigate">
           <img src="/assets/img/Logo_STU_2.png" alt="logo" />
         </div>
       </router-link>
-
-      <ul class="nav-middle" v-if="this.$store.state.NAVBAR.isClassRoom">
+      <!-- MID -->
+      <ul class="nav-middle" v-if="$store.state.NAVBAR.isClassSubject">
         <router-link
           :to="{
-            name: 'ClassRoom',
+            name: 'ClassSubject',
             params: { roomId: this.$route.params.roomId }
           }"
           custom
@@ -67,7 +68,7 @@
         </router-link>
         <router-link
           :to="{
-            name: 'Groups',
+            name: 'Group',
             params: { roomId: this.$route.params.roomId }
           }"
           custom
@@ -80,7 +81,45 @@
           </a>
         </router-link>
       </ul>
-
+      <ul
+        class="nav-middle"
+        v-if="$store.state.NAVBAR.isSubject && $store.getters.getUserRole"
+      >
+        <router-link
+          :to="{ name: 'Home' }"
+          custom
+          v-slot="{ navigate, href, isExactActive }"
+        >
+          <a :href="href" @click="navigate">
+            <li class="middle-item" :class="isExactActive && 'active'">
+              <span class="middle-item__content">Trang chủ</span>
+            </li>
+          </a>
+        </router-link>
+        <router-link
+          :to="{ name: 'SubjectManager' }"
+          custom
+          v-slot="{ navigate, href, isActive }"
+        >
+          <a :href="href" @click="navigate">
+            <li class="middle-item" :class="isActive && 'active'">
+              <span class="middle-item__content">Quản lý môn học</span>
+            </li>
+          </a>
+        </router-link>
+        <router-link
+          :to="{ name: 'ClassSubjectManager' }"
+          custom
+          v-slot="{ navigate, href, isActive }"
+        >
+          <a :href="href" @click="navigate">
+            <li class="middle-item" :class="isActive && 'active'">
+              <span class="middle-item__content">Quản lý lớp môn học</span>
+            </li>
+          </a>
+        </router-link>
+      </ul>
+      <!-- RIGHT -->
       <ul class="nav-menu" v-if="this.$store.state.USER.isLogin">
         <li class="menu-item">
           <!-- Đăng nhập mới hiện -->
@@ -216,6 +255,17 @@
                 </el-option>
               </el-select>
             </div>
+            <div class="group-row block">
+              <label class="title">
+                Học kỳ:
+                <span class="required">*</span>
+              </label>
+              <el-select v-model="dataSubject.semester" placeholder="Select">
+                <el-option label="Học kỳ 1" value="1"></el-option>
+                <el-option label="Học kỳ 2" value="2"></el-option>
+                <el-option label="Học kỳ 3" value="3"></el-option>
+              </el-select>
+            </div>
             <div class="form-btn-group">
               <button
                 class="btn btn-danger"
@@ -307,6 +357,18 @@
                 </el-option>
               </el-select>
             </div>
+            <div class="group-row block">
+              <label class="title">
+                Học kỳ:
+              </label>
+              <el-input
+                placeholder=""
+                :value="dataClass.semester"
+                :disabled="true"
+                style="width: auto; display: inline-block;"
+              >
+              </el-input>
+            </div>
             <div class="form-btn-group">
               <button
                 class="btn btn-danger"
@@ -330,8 +392,6 @@
 </template>
 
 <script>
-import apiStudent from "@/api/student.js";
-import apiLecturer from "@/api/lecturer.js";
 export default {
   data: function() {
     return {
@@ -344,13 +404,15 @@ export default {
       dataSubject: {
         name: "",
         description: "",
-        img: "/assets/img/code.jpg"
+        img: "/assets/img/code.jpg",
+        semester: "1"
       },
       dataClass: {
         name: "",
         description: "",
         img: "/assets/img/code.jpg",
-        subject_id: ""
+        subject_id: "",
+        semester: "Học kỳ 1"
       },
       dataTheme: [
         {
@@ -386,6 +448,8 @@ export default {
               if (this.dataSubjectAll.length > 0) {
                 this.dataSubjectAll.push(res.data.data);
               }
+              res.data.data["number_of_class"] = 0;
+              this.$store.commit("addDataAllSubject", res.data.data);
             } else {
               this.$message.error(res.data.message);
             }
@@ -402,7 +466,7 @@ export default {
     openFormCreateClass() {
       if (this.dataSubjectAll.length < 1) {
         this.$store
-          .dispatch("apiGetAllSubjects", localStorage.getItem("token_user"))
+          .dispatch("apiGetSubjects", localStorage.getItem("token_user"))
           .then(res => {
             this.$set(this, "dataSubjectAll", res.data);
           })
@@ -466,78 +530,29 @@ export default {
           });
       }
     },
-    async logout() {
-      if (!this.$store.state.USER.dataUser.role) {
-        await apiStudent
-          .logout(localStorage.getItem("token_user"))
-          .then(res => {
-            if (res.data.status) {
-              this.$store.commit("setStateLogin", false);
-              this.$store.commit("setDataUser", {
-                id: null,
-                email: null,
-                mssv: null,
-                role: null,
-                isActive: null,
-                first_name: null,
-                last_name: null,
-                sex: null,
-                birthday: null,
-                phone_number: null,
-                address: null,
-                create_by: null
-              });
-              this.isActiveUser = false;
-              localStorage.removeItem("token_user");
-              this.$router.push("/dang-nhap");
-            }
-          })
-          .catch(err => {
-            if (!err.response) {
-              this.$customjs.showToast({
-                title: "Lỗi kết nối",
-                message: "Không thể gửi yêu cầu đến máy chủ",
-                type: 1,
-                time: 3000
-              });
-            }
-          });
-      } else {
-        await apiLecturer
-          .logout(localStorage.getItem("token_user"))
-          .then(res => {
-            if (res.data.status) {
-              this.$store.commit("setStateLogin", false);
-              this.$store.commit("setDataUser", {
-                id: null,
-                email: null,
-                mssv: null,
-                role: null,
-                isActive: null,
-                first_name: null,
-                last_name: null,
-                sex: null,
-                birthday: null,
-                phone_number: null,
-                address: null,
-                create_by: null
-              });
-              this.isActiveUser = false;
-              localStorage.removeItem("token_user");
-              this.$router.push("/dang-nhap");
-            }
-          })
-          .catch(err => {
-            if (!err.response) {
-              this.$customjs.showToast({
-                title: "Lỗi kết nối",
-                message: "Không thể gửi yêu cầu đến máy chủ",
-                type: 1,
-                time: 3000
-              });
-            }
-          });
-      }
+    logout() {
+      this.$store
+        .dispatch("logout")
+        .then(res => {
+          if (res.status) {
+            this.isActiveUser = false;
+            this.$router.push("/dang-nhap");
+          }
+        })
+        .catch(() => {
+          this.$message.error("Lỗi kết nối");
+        });
+    }
+  },
+  created() {
+    let timeNow = new Date();
+    let month = timeNow.getMonth() + 1;
+    if (month > 8 && month < 2) {
+      this.dataClass.semester = "Học kỳ 1";
+    } else if (month > 1 && month < 7) {
+      this.dataClass.semester = "Học kỳ 2";
+    } else {
+      this.dataClass.semester = "Học kỳ 3";
     }
   }
 };

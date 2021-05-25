@@ -2,11 +2,15 @@ import Vue from "vue";
 import apiSubject from "@/api/subject";
 
 const state = {
-  subjects: [] // các môn học hiện tại của giảng viên
+  subjects: [], // các môn học hiện tại của giảng viên
+  allSubjects: [] // Tất cả môn học trên hệ thống
 };
 const getters = {
   getSubjects(state) {
     return state.subjects;
+  },
+  getAllSubjects(state) {
+    return state.allSubjects;
   },
   getSubjectById(state) {
     return id => {
@@ -22,6 +26,21 @@ const getters = {
 const mutations = {
   setDataSubject(state, data) {
     Vue.set(state, "subjects", data);
+  },
+  setDataAllSubject(state, data) {
+    Vue.set(state, "allSubjects", data);
+  },
+  addDataAllSubject(state, data) {
+    state.allSubjects.push(data);
+  },
+  setDataAllSubjectKey(state, [id, key, value]) {
+    state.allSubjects.forEach((subject, index) => {
+      if (subject.id == id) {
+        Vue.set(state.allSubjects[index], key, value);
+        return true;
+      }
+    });
+    return false;
   },
   addNewSubject(state, subjectNew) {
     let flag = false;
@@ -40,8 +59,11 @@ const actions = {
   apiGetSubjectByUserId({ commit }, token) {
     return apiSubject.getByUserId(token);
   },
-  apiGetAllSubjects({ commit }, token) {
+  apiGetSubjects({ commit }, token) {
     return apiSubject.get(token);
+  },
+  apiGetAllSubjects({ commit }, token) {
+    return apiSubject.getAll(token);
   },
   apiCreateSubject({ commit }, [token, data]) {
     return apiSubject.create(token, data)
