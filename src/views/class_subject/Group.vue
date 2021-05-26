@@ -21,20 +21,6 @@
                 </router-link>
 
                 <router-link
-                  :to="{ name: 'ListGroups' }"
-                  custom
-                  v-slot="{ navigate, isExactActive }"
-                >
-                  <li
-                    class="item"
-                    :class="isExactActive && 'active'"
-                    @click="navigate"
-                  >
-                    Danh sách nhóm
-                  </li>
-                </router-link>
-
-                <router-link
                   :to="{ name: 'GroupMembers' }"
                   custom
                   v-slot="{ navigate, isExactActive }"
@@ -49,6 +35,20 @@
                 </router-link>
 
                 <router-link
+                  :to="{ name: 'ListGroups' }"
+                  custom
+                  v-slot="{ navigate, isExactActive }"
+                >
+                  <li
+                    class="item"
+                    :class="isExactActive && 'active'"
+                    @click="navigate"
+                  >
+                    Danh sách nhóm
+                  </li>
+                </router-link>
+
+                <router-link
                   :to="{ name: 'Approves' }"
                   custom
                   v-slot="{ navigate, isExactActive }"
@@ -57,6 +57,7 @@
                     class="item"
                     :class="isExactActive && 'active'"
                     @click="navigate"
+                    v-if="isGroupLeader || $store.getters.getUserRole"
                   >
                     Phê duyệt
                   </li>
@@ -71,6 +72,7 @@
                     class="item"
                     :class="isExactActive && 'active'"
                     @click="navigate"
+                    v-if="$store.getters.getUserRole"
                   >
                     Cài đặt
                   </li>
@@ -82,19 +84,52 @@
       </div>
     </div>
     <div class="group-body" style="margin-top: 30px">
-      <router-view />
+      <router-view
+        :isJoinGroup="isJoinGroup"
+        :myGroup="myGroup"
+        :isGroupLeader="isGroupLeader"
+      />
     </div>
   </div>
 </template>
 
 <script>
+import apiGroup from "@/api/group.js";
 export default {
   props: {
     roomId: {
       required: true
     }
   },
-  created() {
+  data() {
+    return {
+      isJoinGroup: false,
+      myGroup: {},
+      isGroupLeader: false
+    };
+  },
+  async created() {
+    let token = localStorage.getItem("token_user");
+    if (token) {
+      await apiGroup.getMyGroup(token, this.roomId).then(res => {
+        if (Object.keys(res.data).length === 0) {
+          this.isJoinGroup = false;
+          this.isGroupLeader = false;
+          this.myGroup = {};
+        } else {
+          this.isJoinGroup = true;
+          this.myGroup = res.data;
+          this.myGroup.members.forEach(member => {
+            if (
+              member.id == this.$store.getters.getUserId &&
+              member.role == 1
+            ) {
+              this.isGroupLeader = true;
+            }
+          });
+        }
+      });
+    }
     document.title = "Nhóm lớp";
     if (this.$store.getters.getClassDetails.name) {
       document.title += " " + this.$store.getters.getClassDetails.name;

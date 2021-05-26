@@ -21,22 +21,24 @@
         ref="multipleTable"
         @selection-change="handleSelectionChange"
       >
-        <el-table-column type="selection" width="55"> </el-table-column>
+        <el-table-column type="selection" width="40"></el-table-column>
         <el-table-column
-          prop="mssv"
           label="MSSV"
           width="120"
           sortable="custom"
           align="center"
         >
+          <template slot-scope="scope">{{ scope.row.author.mssv }}</template>
         </el-table-column>
         <el-table-column
-          prop="student_name"
           label="Tên SV"
           width="auto"
           min-width="210"
           sortable="custom"
         >
+          <template slot-scope="scope">{{
+            scope.row.author.first_name + " " + scope.row.author.last_name
+          }}</template>
         </el-table-column>
         <el-table-column
           prop="name"
@@ -46,25 +48,18 @@
           sortable="custom"
         >
           <template slot-scope="scope">{{
-            formatType(scope.row.type)
+            formatType(scope.row.ticket_type)
           }}</template>
         </el-table-column>
         <el-table-column
-          prop="content"
+          prop="reason"
           label="Lý do"
           width="auto"
           min-width="200"
           sortable="custom"
         >
         </el-table-column>
-        <el-table-column
-          prop="description"
-          label="Mô tả"
-          width="auto"
-          min-width="200"
-          sortable="custom"
-        >
-        </el-table-column>
+
         <el-table-column
           label="Thời gian"
           width="150"
@@ -81,16 +76,14 @@
           <!--        sv: tham gia/ hủy-->
           <template slot-scope="scope">
             <el-button
-              @click.native.prevent="openFormEdit(scope.$index, scope.row)"
+              @click.native.prevent="updateTicket(scope.row, 1)"
               type="primary"
               size="small"
               >Duyệt
             </el-button>
             <el-button
-              @click.native.prevent="
-                openFormCreateClass(scope.$index, scope.row)
-              "
-              type="success"
+              @click.native.prevent="updateTicket(scope.row, 2)"
+              type="danger"
               size="small"
               >Hủy
             </el-button>
@@ -106,7 +99,19 @@
 </template>
 
 <script>
+import apiGroup from "@/api/group";
 export default {
+  props: {
+    roomId: {
+      required: true
+    },
+    isJoinGroup: {
+      required: true
+    },
+    myGroup: {
+      required: true
+    }
+  },
   data() {
     return {
       keySearch: "",
@@ -121,68 +126,88 @@ export default {
           order: "descending"
         }
       },
-      fakeData: [
-        {
-          id: 0,
-          type: 0,
-          mssv: "DH51704395",
-          student_name: "Nguyễn Quốc Trung",
-          content: `bla bla bla bla`,
-          description: "Nhóm 1 -> nhóm 3",
-          created_at: "2021-5-4"
-        },
-        {
-          id: 1,
-          type: 1,
-          mssv: "DH51704395",
-          student_name: "Nguyễn Quốc Trung",
-          content: `bla bla bla bla`,
-          description: "Nhóm 1 -> nhóm 3",
-          created_at: "2021-5-4"
-        },
-        {
-          id: 2,
-          type: 2,
-          mssv: "DH51704395",
-          student_name: "Nguyễn Quốc Trung",
-          content: `bla bla bla bla`,
-          description: "Nhóm 1 -> nhóm 3",
-          created_at: "2021-5-4"
-        }
-      ],
+      dataApproves: [],
       multipleSelection: []
     };
   },
   methods: {
     dataTable() {
-      return this.fakeData;
+      return this.dataApproves;
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;
     },
     formatTime(time) {
       let date = new Date(time);
+      let minutes = date.getMinutes();
+      let hours = date.getHours();
       let year = date.getFullYear();
       let month = date.getMonth() + 1;
       let day = date.getDate();
+      if (hours < 10) {
+        hours = "0" + hours;
+      }
+      if (minutes < 10) {
+        minutes = "0" + minutes;
+      }
       if (month < 10) {
         month = "0" + month;
       }
       if (day < 10) {
         day = "0" + day;
       }
-      return `${day}-${month}-${year}`;
+      return `${hours}:${minutes} ${day}-${month}-${year}`;
     },
     formatType(type) {
       switch (type) {
         case 0:
-          return "Chuyển nhóm";
+          return "Xin vào nhóm";
         case 1:
-          return "Kick thành viên";
+          return "Xin chuyển nhóm";
         case 2:
-          return "bla bla";
+          return "Kick khỏi nhóm";
       }
+    },
+    updateTicket(ticket, status) {
+      let token = localStorage.getItem("token_user");
+      if (token) {
+        apiGroup
+          .updateTicket(token, this.roomId, ticket.id, { status: status })
+          .then(res => {
+            if (res.data.status) {
+              this.$customjs.showToast({
+                title: "Xử lý yêu cầu",
+                message: res.data.message
+              });
+              this.dataApproves.forEach((item, index) => {
+                if (item.id == ticket.id) {
+                  this.$delete(this.dataApproves, index);
+                  return true;
+                }
+              });
+            } else {
+              this.$customjs.showToast({
+                title: "Xử lý yêu cầu",
+                message: res.data.message,
+                type: 1
+              });
+            }
+          })
+          .catch(() => {
+            this.$message.error("Lỗi kết nối");
+          });
+      }
+    },
+    updateTicketSelects() {}
+  },
+  async created() {
+    let token = localStorage.getItem("token_user");
+    if (token) {
+      await apiGroup.getTickets(token, this.roomId).then(res => {
+        this.dataApproves = res.data;
+      });
     }
+    this.$router.options.nprogress.done();
   }
 };
 </script>

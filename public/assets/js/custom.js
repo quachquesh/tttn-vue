@@ -27,7 +27,7 @@ var custom = {
     let toast = new toastComp({
       propsData: {
         data: {
-          time: data.time || 2000,
+          time: data.time || 3000,
           title: data.title, // bắt buộc
           message: data.message, // bắt buộc
           type: data.type || 0, // 0: success, 1: danger, 2: warning, 3: info

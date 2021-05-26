@@ -73,11 +73,11 @@ export default {
             if (res.status) {
               this.$router.push("/");
             } else {
-              this.formGV.msgError = res.data.message;
+              this.dataLogin.msgError = res.data.message;
             }
           })
           .catch(() => {
-            this.formGV.msgError = "Lỗi kết nối đến máy chủ";
+            this.dataLogin.msgError = "Lỗi kết nối đến máy chủ";
           });
       }
     },

@@ -287,11 +287,7 @@ export default {
           if (cs.semester != 1) {
             year -= 1;
           }
-          if (this.filterYear.data[this.filterYear.index].start == year) {
-            return true;
-          } else {
-            return false;
-          }
+          return this.filterYear.data[this.filterYear.index].start == year;
         });
       }
       // Nếu có từ khóa keySearch
