@@ -113,10 +113,11 @@ export default {
 $padding: 25px 20px;
 .card-outer {
   margin: 0px 20px;
-  border-radius: 20px;
+  border-radius: 10px;
   overflow: hidden;
   max-width: 100%;
   height: 100%;
+  width: 18.75rem;
   box-shadow: 0px 0px 3px rgba(#000, 0.3);
   cursor: pointer;
   transition: linear 0.3s;

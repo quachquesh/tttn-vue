@@ -104,12 +104,6 @@ export default {
   props: {
     roomId: {
       required: true
-    },
-    isJoinGroup: {
-      required: true
-    },
-    myGroup: {
-      required: true
     }
   },
   data() {
@@ -132,7 +126,32 @@ export default {
   },
   methods: {
     dataTable() {
-      return this.dataApproves;
+      if (!this.keySearch) {
+        return this.dataApproves;
+      } else {
+        return this.dataApproves.filter(data => {
+          let mssv = data.author.mssv;
+          let fullName = data.author.first_name + data.author.last_name;
+          if (mssv.toLowerCase().indexOf(this.keySearch.toLowerCase()) != -1) {
+            return true;
+          } else if (
+            fullName.toLowerCase().indexOf(this.keySearch.toLowerCase()) != -1
+          ) {
+            return true;
+          } else {
+            for (let key in data) {
+              if (
+                (data[key] + "")
+                  .toLowerCase()
+                  .indexOf(this.keySearch.toLowerCase()) != -1
+              ) {
+                return true;
+              }
+            }
+          }
+          return false;
+        });
+      }
     },
     handleSelectionChange(val) {
       this.multipleSelection = val;
@@ -163,9 +182,8 @@ export default {
         case 0:
           return "Xin vào nhóm";
         case 1:
-          return "Xin chuyển nhóm";
         case 2:
-          return "Kick khỏi nhóm";
+          return "Xin chuyển nhóm";
       }
     },
     updateTicket(ticket, status) {
@@ -175,10 +193,18 @@ export default {
           .updateTicket(token, this.roomId, ticket.id, { status: status })
           .then(res => {
             if (res.data.status) {
-              this.$customjs.showToast({
-                title: "Xử lý yêu cầu",
-                message: res.data.message
-              });
+              if (res.data.reason == "time") {
+                this.$customjs.showToast({
+                  title: "Xử lý yêu cầu",
+                  message: res.data.message,
+                  type: 1
+                });
+              } else {
+                this.$customjs.showToast({
+                  title: "Xử lý yêu cầu",
+                  message: res.data.message
+                });
+              }
               this.dataApproves.forEach((item, index) => {
                 if (item.id == ticket.id) {
                   this.$delete(this.dataApproves, index);
@@ -199,6 +225,9 @@ export default {
       }
     },
     updateTicketSelects() {}
+  },
+  beforeCreate() {
+    this.$router.options.nprogress.set(0.7);
   },
   async created() {
     let token = localStorage.getItem("token_user");

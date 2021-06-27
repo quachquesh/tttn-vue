@@ -96,7 +96,9 @@
       </div>
     </div>
     <div class="create-user-body">
-      <router-view />
+      <transition name="fade" mode="out-in" appear>
+        <router-view />
+      </transition>
     </div>
   </div>
 </template>
@@ -104,7 +106,7 @@
 <script>
 export default {
   created() {
-    if (this.$store.state.USER.dataUser.role === "admin") {
+    if (this.$store.state.USER.dataUser.role == "admin") {
       this.$router.options.nprogress.done();
     }
   }

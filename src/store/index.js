@@ -7,6 +7,7 @@ import Navbar from "./modules/navbar";
 import Subject from "./modules/subject";
 import ClassSubject from "./modules/classSubject";
 import ClassSubjectDetails from "./modules/classSubjectDetails";
+import Ticket from "./modules/ticket";
 
 Vue.use(Vuex);
 
@@ -17,6 +18,7 @@ export default new Vuex.Store({
     NAVBAR: Navbar,
     SUBJECT: Subject,
     CLASSSUBJECT: ClassSubject,
-    CLASSSUBJECTDETAILS: ClassSubjectDetails
+    CLASSSUBJECTDETAILS: ClassSubjectDetails,
+    TICKET: Ticket
   }
 });

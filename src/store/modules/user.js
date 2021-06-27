@@ -128,8 +128,8 @@ const actions = {
   //         })
   //         .catch(err => {
   //           if (
-  //             err.response.data.message === "Unauthenticated." ||
-  //             err.response.data.message === "Invalid scope(s) provided."
+  //             err.response.data.message == "Unauthenticated." ||
+  //             err.response.data.message == "Invalid scope(s) provided."
   //           ) {
   //             apiStudent
   //               .userDetails(token_user)

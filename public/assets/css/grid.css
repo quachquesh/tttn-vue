@@ -53,9 +53,11 @@ html {
   width: auto;
   max-width: 100%;
 }
-
+.c-flex {
+  display: flex !important;
+}
 .c-0 {
-  display: none;
+  display: none !important;
 }
 
 .c-1 {
@@ -177,8 +179,11 @@ html {
     width: auto;
     max-width: 100%;
   }
+  .m-flex {
+    display: flex !important;
+  }
   .m-0 {
-    display: none;
+    display: none !important;
   }
   .m-1,
   .m-2,
@@ -310,8 +315,11 @@ html {
     width: auto;
     max-width: 100%;
   }
+  .l-flex {
+    display: flex !important;
+  }
   .l-0 {
-    display: none;
+    display: none !important;
   }
   .l-1,
   .l-2,

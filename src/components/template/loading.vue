@@ -1,6 +1,6 @@
 <template>
   <transition name="fade">
-    <div class="loading" v-if="loading" :style="{ zIndex: zIndex }">
+    <div class="loading" v-if="checkLoading()" :style="{ zIndex: zIndex }">
       <div
         class="loading-background"
         :style="{ opacity: opacityBackground }"
@@ -28,17 +28,20 @@ export default {
       default: 3000
     }
   },
-  beforeCreate() {
-    document.querySelector("body").style.overflowY = "hidden";
-    document.querySelector("body").style.overflowX = "hidden";
-  },
-  watch: {
-    loading() {
+  methods: {
+    checkLoading() {
       if (this.loading == false) {
         document.querySelector("body").style.overflowY = "auto";
         document.querySelector("body").style.overflowX = "auto";
+        return false;
+      } else {
+        return true;
       }
     }
+  },
+  beforeCreate() {
+    document.querySelector("body").style.overflowY = "hidden";
+    document.querySelector("body").style.overflowX = "hidden";
   }
 };
 </script>
@@ -57,7 +60,7 @@ export default {
     left: 0;
     bottom: 0;
     right: 0;
-    background-color: #fff;
+    background-color: #f9f9f9;
     user-select: none;
   }
   .loading-box {

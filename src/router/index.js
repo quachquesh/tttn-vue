@@ -16,7 +16,7 @@ nprogress.configure({
 
 const checkLogin = (to, from, next) => {
   // Lần đầu load trang
-  if (store.getters.getUserId === null) {
+  if (store.getters.getUserId == null) {
     store
       .dispatch("checkLogin")
       .then(() => {
@@ -27,7 +27,7 @@ const checkLogin = (to, from, next) => {
       });
   } else {
     // Chuyển router không load trang
-    if (store.getters.getIsLogin === true) {
+    if (store.getters.getIsLogin == true) {
       next();
     } else {
       next({ name: "Login" });
@@ -37,11 +37,11 @@ const checkLogin = (to, from, next) => {
 
 const checkAdmin = (to, from, next) => {
   // Nếu reload trang
-  if (store.getters.getUserId === null) {
+  if (store.getters.getUserId == null) {
     store
       .dispatch("checkLogin")
       .then(res => {
-        if (res.role === "admin") {
+        if (res.role == "admin") {
           next();
         } else {
           next("/");
@@ -52,9 +52,9 @@ const checkAdmin = (to, from, next) => {
       });
   } else {
     // Chuyển router không load trang
-    if (store.getters.getUserRole === "admin") {
+    if (store.getters.getUserRole == "admin") {
       next();
-    } else if (store.getters.getIsLogin === false) {
+    } else if (store.getters.getIsLogin == false) {
       next({ name: "Login" });
     } else {
       next("/");
@@ -64,14 +64,14 @@ const checkAdmin = (to, from, next) => {
 
 const checkRole = (to, from, next) => {
   // Nếu reload trang
-  if (store.getters.getUserId === null) {
+  if (store.getters.getUserId == null) {
     store
       .dispatch("checkLogin")
       .then(res => {
         if (res.role) {
           next();
         } else {
-          next("/");
+          next({ name: "Home" });
         }
       })
       .catch(() => {
@@ -81,10 +81,10 @@ const checkRole = (to, from, next) => {
     // Chuyển router không load trang
     if (store.getters.getUserRole) {
       next();
-    } else if (store.getters.getIsLogin === false) {
+    } else if (store.getters.getIsLogin == false) {
       next({ name: "Login" });
     } else {
-      next("/");
+      next({ name: "Home" });
     }
   }
 };
@@ -110,6 +110,19 @@ const routes = [
         components: {
           default: loadView("ListSubject.vue"),
           ListClassSubject: loadView("ListClassSubject.vue")
+        },
+        meta: {
+          transition: "slide-left",
+          title: "Trang chủ"
+        }
+      },
+      {
+        path: "/ticket-manager",
+        name: "TicketManager",
+        component: loadView("TicketManager.vue"),
+        meta: {
+          transition: "slide-left",
+          title: "Quản lý Yêu cầu"
         }
       },
       {
@@ -348,9 +361,9 @@ const router = new VueRouter({
 });
 
 router.beforeEach((to, from, next) => {
-  if (to.name !== "Login" && !localStorage.getItem("token_user"))
+  if (to.name != "Login" && !localStorage.getItem("token_user"))
     next({ name: "Login" });
-  else if (to.name === "Login" && localStorage.getItem("token_user"))
+  else if (to.name == "Login" && localStorage.getItem("token_user"))
     next({ name: "Home" });
   else {
     nprogress.start();

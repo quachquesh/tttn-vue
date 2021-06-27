@@ -73,7 +73,7 @@ export default {
             if (res.status) {
               this.$router.push("/");
             } else {
-              this.dataLogin.msgError = res.data.message;
+              this.dataLogin.msgError = res.message;
             }
           })
           .catch(() => {
@@ -136,7 +136,7 @@ export default {
 
 @media (max-width: 739px) {
   #login {
-    margin: 0 20px;
+    width: 100%;
     .form-box {
       width: 100%;
       .form-block {
@@ -177,6 +177,12 @@ export default {
           }
         }
       }
+    }
+  }
+  .login-box {
+    .form-gv-box,
+    .form-sv-box {
+      padding: 50px 10px;
     }
   }
 }

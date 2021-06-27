@@ -1,14 +1,12 @@
 <template>
   <div>
-    <loading z-index="1500" :loading="loading" />
-    <transition name="fade" mode="out-in" appear>
-      <router-view></router-view>
+    <transition name="slide-left" mode="out-in" appear>
+      <router-view v-if="loading == false"></router-view>
     </transition>
   </div>
 </template>
 <script>
 import apiClassSubject from "@/api/classSubject";
-import Loading from "@/components/template/loading";
 
 export default {
   props: {
@@ -21,31 +19,26 @@ export default {
       loading: true
     };
   },
-  components: {
-    Loading
-  },
   async created() {
-    await apiClassSubject
-      .getAllInfo(localStorage.getItem("token_user"), this.roomId)
-      .then(res => {
-        this.$store.commit("setClassNotifies", res.data.notifies);
-        this.$store.commit("setClassSubjectDetails", res.data.classSubject);
-        this.$store.commit("setSubjectDetails", res.data.subject);
-        this.$store.commit("setClassMember", res.data.classMembers);
-        this.$store.commit("setClassLecturer", res.data.classLecturer);
-        // this.$set(
-        //   this,
-        //   "classSubject",
-        //   this.$store.state.CLASSSUBJECTDETAILS.classSubject
-        // );
-        // this.$set(
-        //   this,
-        //   "subject",
-        //   this.$store.state.CLASSSUBJECTDETAILS.subject
-        // );
-        this.loading = false;
-      })
-      .catch(() => this.$message.error("Không thể gửi yêu cầu đến máy chủ"));
+    if (
+      Object.keys(this.$store.getters.getClassDetails) == 0 ||
+      this.$store.getters.getClassDetails.id != this.roomId
+    ) {
+      await apiClassSubject
+        .getAllInfo(localStorage.getItem("token_user"), this.roomId)
+        .then(res => {
+          this.$store.commit("setClassNotifies", res.data.notifies);
+          this.$store.commit("setClassSubjectDetails", res.data.classSubject);
+          this.$store.commit("setSubjectDetails", res.data.subject);
+          this.$store.commit("setClassMember", res.data.classMembers);
+          this.$store.commit("setClassLecturer", res.data.classLecturer);
+          this.loading = false;
+        })
+        .catch(() => this.$message.error("Không thể gửi yêu cầu đến máy chủ"));
+    } else {
+      this.loading = false;
+    }
+
     this.$store.commit("setStateClassSubject", true); // store navbar
   },
   destroyed() {

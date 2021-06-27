@@ -2,7 +2,13 @@
   <div id="app">
     <loading :loading="loading" />
     <navbar />
-    <div id="app-body">
+    <div
+      id="app-body"
+      :class="{
+        'navbar-extra-show':
+          $store.state.NAVBAR.isSubject || $store.state.NAVBAR.isClassSubject
+      }"
+    >
       <nprogress-container></nprogress-container>
       <transition :name="transitionName" mode="out-in" appear>
         <router-view></router-view>
@@ -15,8 +21,6 @@
 import NprogressContainer from "vue-nprogress/src/NprogressContainer";
 import Navbar from "@/components/template/navbar.vue";
 import Loading from "@/components/template/loading.vue";
-// import apiStudent from "@/api/student.js";
-// import apiLecturer from "@/api/lecturer.js";
 export default {
   data() {
     return {
@@ -47,11 +51,15 @@ export default {
 </script>
 
 <style lang="scss">
+body {
+  background-color: #f3f3f3;
+}
 #app-body {
   padding: 30px;
   box-sizing: border-box;
   position: relative;
   margin-top: var(--height-navbar);
+  position: relative;
 }
 
 #toast-box {
@@ -71,15 +79,34 @@ export default {
   width: 100%;
 }
 
+.list-card {
+  display: flex;
+  flex-wrap: wrap;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
+}
+
 @media (max-width: 1113px) {
+  #app-body {
+    &.navbar-extra-show {
+      margin-top: calc(var(--height-navbar) * 2 - 8px);
+    }
+  }
   .display-grid-card {
     grid-template-columns: 50% 50%;
   }
 }
 
 @media (max-width: 739px) {
+  #app-body {
+    padding: 30px 10px;
+  }
   .display-grid-card {
     grid-template-columns: 100%;
+  }
+  .list-card {
+    justify-content: center;
   }
 }
 </style>

@@ -85,9 +85,9 @@
                   <span class="icon">
                     <img src="/assets/img/hacker.png" />
                   </span>
-                  <span class="content"
-                    >Thông báo nội dung cho lớp học của bạn</span
-                  >
+                  <span class="content">
+                    Thông báo nội dung cho lớp học của bạn
+                  </span>
                 </div>
                 <div class="right">
                   <span class="material-icons">history_edu</span>
@@ -162,15 +162,11 @@
                     </ul>
                   </div>
                 </div>
-                <div class="body" :class="{ active: dataNotify.content != '' }">
-                  <textarea
-                    name=""
-                    class="notify-content"
-                    v-model="dataNotify.content"
-                  ></textarea>
-                  <span class="line"></span>
-                  <label>Nội dung thông báo cho lớp học</label>
-                </div>
+                <txtarea-editor
+                  txtarea-id="notify-post"
+                  :content-edit="dataNotify.content"
+                  @input="dataNotify.content = $event"
+                />
                 <div class="files">
                   <ul class="list-files">
                     <li
@@ -287,9 +283,10 @@
                       </ul>
                     </div>
                   </div>
-                  <div class="content">
-                    {{ notify.content }}
-                  </div>
+                  <div
+                    class="content"
+                    v-html="formatHTML(notify.content)"
+                  ></div>
                   <div class="files">
                     <ul class="list-files">
                       <li
@@ -344,9 +341,7 @@
                           }}
                         </span>
                       </div>
-                      <span class="content">
-                        {{ cmt.content }}
-                      </span>
+                      <span class="content">{{ cmt.content }}</span>
                     </div>
                     <span
                       class="dots"
@@ -537,18 +532,11 @@
                   </ul>
                 </div>
               </div>
-              <div
-                class="body"
-                :class="{ active: dataEditNotify.data.content != '' }"
-              >
-                <textarea
-                  name=""
-                  class="notify-content"
-                  v-model="dataEditNotify.data.content"
-                ></textarea>
-                <span class="line"></span>
-                <label>Nội dung thông báo cho lớp học</label>
-              </div>
+              <txtarea-editor
+                txtarea-id="notify-edit"
+                :content-edit="dataEditNotify.data.content"
+                @input="dataEditNotify.data.content = $event"
+              />
               <div class="files">
                 <ul class="list-files">
                   <li
@@ -606,6 +594,7 @@
 <script>
 import apiNotify from "@/api/notify";
 import apiDownload from "@/api/download";
+import txtareaEditor from "@/components/template/txtarea_editor";
 const FileDownload = require("js-file-download");
 export default {
   props: {
@@ -636,6 +625,93 @@ export default {
     };
   },
   methods: {
+    formatHTML(text) {
+      let str = text;
+      str = str.replaceAll(/</g, "&#60");
+      str = str.replaceAll(/>/g, "&#62");
+
+      while (str != "") {
+        let formatOpen = {
+          indexStart: -1,
+          indexEnd: -1,
+          content: ""
+        };
+        let indexFormatClose = -1;
+        let content = {
+          start: "",
+          main: "",
+          end: ""
+        };
+
+        formatOpen.indexStart = str.indexOf("[FORMAT");
+        if (formatOpen.indexStart == -1) {
+          break;
+        }
+        formatOpen.indexEnd = str.indexOf("]", formatOpen.indexStart);
+        formatOpen.content = str.slice(
+          formatOpen.indexStart,
+          formatOpen.indexEnd
+        );
+
+        indexFormatClose = str.indexOf("[/FORMAT]");
+        if (indexFormatClose == -1) {
+          break;
+        }
+        content.start = str.slice(0, formatOpen.indexStart);
+        content.main = str.slice(formatOpen.indexEnd + 1, indexFormatClose);
+        content.end = str.slice(indexFormatClose + 9, str.length);
+        let options = formatOpen.content.split(" ");
+        let style = "";
+        let attr = "";
+        let tag = "div";
+        options.forEach(option => {
+          let arrStr = option.split('"');
+          if (arrStr.length > 0) {
+            switch (arrStr[0]) {
+              case "url=":
+                attr += ` href="${arrStr[1]}" target="_blank"`;
+                tag = "a";
+                style += "text-decoration: none; color: #1266f1;";
+                break;
+              case "fontSize=":
+                if (arrStr[1] > 40) {
+                  style += `font-size: 40px`;
+                } else if (arrStr[1] < 8) {
+                  style += `font-size: 8px`;
+                } else {
+                  style += `font-size: ${arrStr[1]}px`;
+                }
+                break;
+              case "bold":
+                style += "font-weight: 600;";
+                break;
+              case "italic":
+                style += "font-style: italic;";
+                break;
+              case "underline":
+                style += "text-decoration: underline;";
+                break;
+              case "strikethrough":
+                style += "text-decoration: line-through;";
+                break;
+              case "align=":
+                style += `text-align: ${arrStr[1]}; display: block;`;
+                break;
+              case "color=":
+                style += `color: ${arrStr[1]};`;
+                break;
+              case "bgColor=":
+                style += `background-color: ${arrStr[1]};`;
+                break;
+            }
+          }
+        });
+
+        str = `${content.start}<${tag} ${attr} style="${style}">${content.main}</${tag}>${content.end}`;
+      }
+
+      return str;
+    },
     downloadFile(filePath, fileName) {
       let token = localStorage.getItem("token_user");
       if (token) {
@@ -1020,11 +1096,11 @@ export default {
       let token = localStorage.getItem("token_user");
       if (token && input.innerText != "") {
         apiNotify
-          .createReply(token, notify.id, input.innerText)
+          .createReply(token, this.roomId, notify.id, input.innerText)
           .then(res => {
             if (res.data.status) {
               res.data.data["author"] = this.$store.getters.getDataUser;
-              res.data.data["comment"] = [];
+              // res.data.data["comment"] = [];
               notify.comment.push(res.data.data);
               input.innerText = "";
               input.parentElement.classList.remove("valid");
@@ -1139,6 +1215,9 @@ export default {
         event.target.classList.toggle("active");
       else event.target.parentElement.classList.toggle("active");
     }
+  },
+  components: {
+    txtareaEditor
   },
   created() {
     document.title = "Bảng tin lớp";
@@ -1258,6 +1337,7 @@ export default {
     border-radius: 10px;
     box-shadow: 0px 0px 3px rgba(#000, 0.3);
     padding: 22px;
+    background-color: #ffffff;
     .body-left__title {
       font-weight: 500;
       color: #5c5c5c;
@@ -1308,12 +1388,15 @@ export default {
   }
   .body-right {
     flex: 1;
+    width: 50%;
     .post-notify-box {
       box-shadow: 0px 0px 3px rgba(#000, 0.1), 0px 0px 10px rgba(#000, 0.2);
       border-radius: 10px;
       box-sizing: border-box;
       height: 72px;
       transition: linear 0.3s;
+      background-color: #ffffff;
+      width: 100%;
       &.notify-full {
         height: auto;
       }
@@ -1367,6 +1450,7 @@ export default {
       .post-notify-full {
         @include post-notify;
         padding: 25px;
+        width: 100%;
         .header {
           .title {
             font-weight: 500;
@@ -1478,7 +1562,7 @@ export default {
                   white-space: nowrap;
                   text-overflow: ellipsis;
                   flex: 1;
-                  font-size: 14px;
+                  font-size: 16px;
                   color: #757575;
                   font-weight: 500;
                 }
@@ -1505,14 +1589,32 @@ export default {
             resize: none;
             height: 128px;
             width: 100%;
-            padding: 0 16px 9px;
+            padding: 0 12px 9px;
             margin-top: 28px;
-            overflow: hidden;
+            //overflow: hidden;
             border-radius: 5px;
             border: none;
             outline: none;
             position: relative;
-            font-size: 16px;
+            font-size: 15.5px;
+            cursor: auto;
+            &::-webkit-scrollbar {
+              width: 6px;
+            }
+
+            &::-webkit-scrollbar-track {
+              border-radius: 10px;
+              box-shadow: inset 0 0 5px grey;
+            }
+
+            &::-webkit-scrollbar-thumb {
+              background: #888;
+              border-radius: 10px;
+            }
+
+            &::-webkit-scrollbar-thumb:hover {
+              background: #555;
+            }
             &:focus {
               border: none;
               outline: none;
@@ -1547,9 +1649,37 @@ export default {
             transition: linear 0.2s;
           }
         }
-        .files {
+        .list-tools {
           display: flex;
-          flex-direction: column;
+          flex-wrap: wrap;
+          align-items: center;
+          margin-top: 5px;
+          .tool-groups {
+            padding: 0 5px;
+            border-right: 1px solid #000;
+            &:last-child {
+              padding-right: 0;
+              border-right: unset;
+            }
+            .tool-items {
+              margin: 0 4px;
+              user-select: none;
+              cursor: pointer;
+              position: relative;
+              .tool-template {
+                opacity: 0;
+                visibility: hidden;
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                z-index: -1;
+              }
+            }
+          }
+        }
+        .files {
           margin-top: 10px;
           .list-files {
             list-style: none;
@@ -1558,11 +1688,16 @@ export default {
               align-items: center;
               position: relative;
               width: fit-content;
+              max-width: 100%;
               padding: 4px 40px 4px 0px;
               transition: 0.3s;
               &:hover {
                 background-color: #c6d1ff;
                 .file-name {
+                  width: 100%;
+                  overflow: hidden;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
                   color: #000000;
                 }
                 .btn-remove {
@@ -1571,6 +1706,10 @@ export default {
                 }
               }
               .file-name {
+                width: 100%;
+                overflow: hidden;
+                white-space: nowrap;
+                text-overflow: ellipsis;
                 color: #0020ff;
               }
               .btn-remove {
@@ -1645,6 +1784,7 @@ export default {
         box-shadow: 0px 0px 5px rgba(#000, 0.2);
         border-radius: 5px;
         font-size: 14px;
+        background-color: #ffffff;
         .notify-main {
           width: 100%;
           padding: 16px 15px 24px 25px;
@@ -1747,10 +1887,10 @@ export default {
           .content {
             margin-top: 8px;
             // text-align: justify;
-            font-size: 14px;
-            line-height: 20px;
+            font-size: 16px;
+            //line-height: 20px;
             margin-right: 12px;
-            white-space: pre-line;
+            white-space: pre-wrap;
             overflow-wrap: anywhere;
           }
           .files {
@@ -1764,6 +1904,7 @@ export default {
                 align-items: center;
                 position: relative;
                 width: fit-content;
+                max-width: 100%;
                 user-select: none;
                 cursor: pointer;
                 border: 1px solid #8b8b8b;
@@ -1776,6 +1917,10 @@ export default {
                   color: #fff;
                 }
                 .file-name {
+                  width: 100%;
+                  overflow: hidden;
+                  white-space: nowrap;
+                  text-overflow: ellipsis;
                 }
                 .material-icons {
                   position: absolute;
@@ -1804,6 +1949,12 @@ export default {
             }
             &:active {
               background-color: #dcdcdc;
+            }
+            &.active {
+              color: var(--color-primary);
+              .material-icons {
+                color: var(--color-primary);
+              }
             }
             .material-icons {
               color: #555;
@@ -1857,7 +2008,7 @@ export default {
               .content {
                 margin-top: 6px;
                 margin-right: 16px;
-                white-space: pre-line;
+                white-space: pre-wrap;
                 overflow-wrap: anywhere;
               }
             }
@@ -2000,12 +2151,18 @@ export default {
 }
 
 .form-edit {
+  .form-box {
+    width: 643px !important;
+    .form-block {
+      padding: 30px !important;
+    }
+  }
   position: fixed;
   width: 100%;
   height: 100%;
   top: 0;
   left: 0;
-  z-index: 3000;
+  z-index: 2000;
   transition: 0.3s;
   &.hidden {
     opacity: 0;
@@ -2023,13 +2180,14 @@ export default {
     left: 50%;
     transform: translate(-50%, -50%);
     width: 360px;
+    border-radius: 20px;
     box-shadow: 7px 7px 14px rgba(#000, 0.2), -3px -3px 7px #dddddd;
     .input-box {
       display: flex;
       justify-content: flex-start;
       align-items: center;
       position: relative;
-      margin-left: 14px;
+      margin-left: 0;
       flex: 1;
       &.valid {
         label {
@@ -2040,7 +2198,7 @@ export default {
         }
       }
       .input {
-        border-radius: 20px;
+        border-radius: 10px;
         width: 100px;
         flex: 1;
         position: relative;
@@ -2052,10 +2210,10 @@ export default {
         cursor: text;
         padding: 10px 18px;
         font-size: 14px;
-        border: 2px solid rgba(#000, 0.6);
+        border: 1px solid rgba(#000, 0.6);
         &:focus {
           outline: none;
-          border: 2px solid var(--color-primary);
+          border: 1px solid var(--color-primary);
         }
       }
       label {
@@ -2078,9 +2236,9 @@ export default {
 
 #form-edit-notify {
   .form-box {
-    min-width: 600px;
+    min-width: 760px;
     .form-block {
-      padding: 30px 30px;
+      padding: 30px;
     }
   }
   .post-notify-full {
@@ -2226,14 +2384,32 @@ export default {
         resize: none;
         height: 128px;
         width: 100%;
-        padding: 0 16px 9px;
+        padding: 0 12px 9px;
         margin-top: 28px;
-        overflow: hidden;
+        //overflow: hidden;
         border-radius: 5px;
         border: none;
         outline: none;
         position: relative;
-        font-size: 16px;
+        font-size: 15.5px;
+        cursor: auto;
+        &::-webkit-scrollbar {
+          width: 6px;
+        }
+
+        &::-webkit-scrollbar-track {
+          border-radius: 10px;
+          box-shadow: inset 0 0 5px grey;
+        }
+
+        &::-webkit-scrollbar-thumb {
+          background: #888;
+          border-radius: 10px;
+        }
+
+        &::-webkit-scrollbar-thumb:hover {
+          background: #555;
+        }
         &:focus {
           border: none;
           outline: none;
@@ -2279,12 +2455,17 @@ export default {
           align-items: center;
           position: relative;
           width: fit-content;
+          max-width: 100%;
           padding: 4px 40px 4px 0px;
           transition: 0.3s;
           &:hover {
             background-color: #c6d1ff;
             .file-name {
               color: #000000;
+              width: 100%;
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
             }
             .btn-remove {
               opacity: 1;
@@ -2293,6 +2474,10 @@ export default {
           }
           .file-name {
             color: #0020ff;
+            width: 100%;
+            overflow: hidden;
+            white-space: nowrap;
+            text-overflow: ellipsis;
           }
           .btn-remove {
             position: absolute;
@@ -2343,6 +2528,126 @@ export default {
         .btn-primary {
           padding: 6px 20px;
           font-weight: 500;
+        }
+      }
+    }
+  }
+}
+
+.form-inser-link-box {
+  z-index: 1500;
+  position: fixed;
+  width: 100%;
+  height: 100vh;
+  left: 0;
+  top: 0;
+  .overlay {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    cursor: pointer;
+    background-color: rgba(#000, 0.2);
+    -webkit-tap-highlight-color: transparent;
+  }
+  form {
+    min-width: 400px;
+    max-width: 90%;
+    position: absolute;
+    top: 20%;
+    left: 50%;
+    transform: translate(-50%);
+    .form-block {
+      box-shadow: 7px 7px 14px rgba(#000, 0.2), -3px -3px 7px rgba(#ddd, 1);
+    }
+    .group-row {
+      margin-top: 18px;
+      .title {
+        font-weight: 500;
+        font-size: 16px;
+        margin-right: 16px;
+        .required {
+          color: red;
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 770px) {
+  .classroom-banner {
+    .banner-body {
+      .class-banner-top {
+        .banner-title {
+          font-size: 24px;
+        }
+        .banner-description {
+          font-size: 16px;
+        }
+        .banner-class-key {
+          font-size: 14px;
+        }
+      }
+      .class-banner-bottom {
+        margin-top: 5px;
+      }
+    }
+  }
+  .class-body {
+    .body-left {
+      display: none;
+    }
+    .body-right {
+      width: 100%;
+      .list-notify {
+        .notify-box {
+          .notify-main {
+            .files {
+              .list-files {
+                .file-items {
+                  .file-name {
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .form-edit {
+    .form-box {
+      width: 89% !important;
+      .form-block {
+        padding: 30px !important;
+        .form-title {
+          font-size: 22px;
+        }
+      }
+    }
+    .overlay {
+      width: 100%;
+      height: 100%;
+      background: rgba(#000, 0.2);
+      cursor: pointer;
+    }
+    .form-box {
+    }
+  }
+
+  #form-edit-notify {
+    .form-box {
+      min-width: 95%;
+      .form-block {
+        padding: 25px 20px;
+      }
+    }
+    .post-notify-full {
+      .body {
+        .notify-content {
+          font-size: 15px;
         }
       }
     }

@@ -21,9 +21,6 @@ export default {
       headerAuth(token)
     );
   },
-  getListMember(token, notifyId) {
-    return axios().get("/notify/listMember/" + notifyId, headerAuth(token));
-  },
   update(token, formData, notifyId) {
     return axios().post("/notify/" + notifyId + "?_method=PUT", formData, {
       headers: {
@@ -32,10 +29,13 @@ export default {
       }
     });
   },
+  getListMember(token, notifyId) {
+    return axios().get("/notify/listMember/" + notifyId, headerAuth(token));
+  },
 
-  createReply(token, notifyId, content) {
+  createReply(token, classId, notifyId, content) {
     return axios().post(
-      "notify/" + notifyId + "/reply",
+      "notify/" + classId + "/" + notifyId + "/reply",
       { content: content },
       headerAuth(token)
     );

@@ -136,9 +136,11 @@
 
 <script>
 import apiStudent from "@/api/student.js";
+
 export default {
   data() {
     return {
+      loading: true,
       dataStudent: {
         mssv: "",
         password: "",
@@ -162,16 +164,16 @@ export default {
       }
     },
     async createUser() {
-      if (this.dataStudent.address === "") {
+      if (this.dataStudent.address == "") {
         this.$delete(this.dataStudent, "address");
       }
-      if (this.dataStudent.email === "") {
+      if (this.dataStudent.email == "") {
         this.$delete(this.dataStudent, "email");
       }
-      if (this.dataStudent.phone_number === "") {
+      if (this.dataStudent.phone_number == "") {
         this.$delete(this.dataStudent, "phone_number");
       }
-      if (this.dataStudent.password === "") {
+      if (this.dataStudent.password == "") {
         this.$delete(this.dataStudent, "password");
       }
       apiStudent
@@ -225,7 +227,7 @@ export default {
     }
   },
   created() {
-    if (this.$store.state.USER.dataUser.role === "admin") {
+    if (this.$store.state.USER.dataUser.role == "admin") {
       this.$router.options.nprogress.done();
     }
   }

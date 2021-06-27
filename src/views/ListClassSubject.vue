@@ -1,12 +1,6 @@
 <!--suppress JSUnusedGlobalSymbols -->
 <template>
-  <div
-    id="class-room"
-    :class="{
-      'display-grid-card': $store.state.CLASSSUBJECT.classSubjects.length > 0
-    }"
-  >
-    <loading :z-index="1500" :loading="loading" />
+  <div id="class-room" class="list-card">
     <h2 v-if="$store.state.CLASSSUBJECT.classSubjects.length < 1">
       Chưa tham gia lớp học nào
     </h2>
@@ -18,7 +12,7 @@
       custom
       v-slot="{ navigate, href }"
     >
-      <a :href="href" @click="navigate">
+      <a :href="href" @click="navigate" class="card-item">
         <card-subject :data-class="classSubject" />
       </a>
     </router-link>
@@ -56,7 +50,6 @@
 
 <script>
 import CardSubject from "@/components/template/card_subject.vue";
-import Loading from "@/components/template/loading";
 export default {
   props: ["subjectId"],
   data() {
@@ -110,34 +103,49 @@ export default {
     }
   },
   components: {
-    Loading,
     CardSubject
   },
   async created() {
     document.title = "Danh sách lớp học";
     let token = localStorage.getItem("token_user");
     if (token) {
+      // Giảng viên thì lấy danh sách môn học
       if (this.$store.getters.getUserRole) {
-        await this.$store
-          .dispatch("apiGetClassSubject", [token, this.subjectId])
-          .then(res => {
-            this.$store.commit("setDataClassSubject", res.data);
-            this.$store.commit("setSubjectId", this.subjectId);
-            this.loading = false;
-          })
-          .catch(() => {
-            this.$message.error("Không thể gửi yêu cầu đến máy chủ");
-          });
+        // Nếu môn học hiện tại đã có data thì k gửi request nữa
+        console.log(this.$store.getters.getSubjectCurrentId, this.subjectId);
+        if (
+          this.$store.getters.getClassSubject.length == 0 ||
+          this.$store.getters.getSubjectCurrentId != this.subjectId
+        ) {
+          await this.$store
+            .dispatch("apiGetClassSubject", [token, this.subjectId])
+            .then(res => {
+              this.$store.commit("setDataClassSubject", res.data);
+              this.$store.commit("setSubjectId", this.subjectId);
+              this.loading = false;
+            })
+            .catch(() => {
+              this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+            });
+        } else {
+          this.loading = false;
+        }
       } else {
-        this.$store
-          .dispatch("apiGetMyClassSubject", token)
-          .then(res => {
-            this.$store.commit("setDataClassSubject", res.data);
-            this.loading = false;
-          })
-          .catch(() => {
-            this.$message.error("Không thể gửi yêu cầu đến máy chủ");
-          });
+        // Sinh viên thì lấy danh sách lớp học
+        // Chưa có data thì gửi request
+        if (Object.keys(this.$store.getters.getClassSubject).length == 0) {
+          this.$store
+            .dispatch("apiGetMyClassSubject", token)
+            .then(res => {
+              this.$store.commit("setDataClassSubject", res.data);
+              this.loading = false;
+            })
+            .catch(() => {
+              this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+            });
+        } else {
+          this.loading = false;
+        }
       }
     }
 
@@ -201,7 +209,6 @@ export default {
         }
       }
     }
-
     // $store.getters.getUserRole
     this.$router.options.nprogress.done();
   }
@@ -212,9 +219,11 @@ export default {
 #class-room {
   position: relative;
 }
-a {
+.card-item {
   text-decoration: none;
   color: #000;
+  margin-bottom: 20px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .filter-class {

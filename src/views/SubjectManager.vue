@@ -1,6 +1,5 @@
 <template>
-  <div id="subject-manager">
-    <loading :z-index="1500" :loading="loading" />
+  <div id="subject-manager" v-if="loading == false">
     <div class="header">
       <div class="left">
         <span class="label">Tìm kiếm: </span>
@@ -207,8 +206,6 @@
 </template>
 
 <script>
-import Loading from "@/components/template/loading";
-
 export default {
   data() {
     return {
@@ -339,19 +336,21 @@ export default {
       this.formCreateClass = true;
     }
   },
-  components: {
-    Loading
-  },
   async created() {
     let token = localStorage.getItem("token_user");
     if (token) {
-      await this.$store
-        .dispatch("apiGetAllSubjects", token)
-        .then(res => {
-          this.$store.commit("setDataAllSubject", res.data);
-          this.loading = false;
-        })
-        .catch(() => this.$message.error("Lỗi kết nối"));
+      // Có data rồi thì k cần gửi request nữa
+      if (Object.keys(this.$store.getters.getAllSubjects).length == 0) {
+        await this.$store
+          .dispatch("apiGetAllSubjects", token)
+          .then(res => {
+            this.$store.commit("setDataAllSubject", res.data);
+            this.loading = false;
+          })
+          .catch(() => this.$message.error("Lỗi kết nối"));
+      } else {
+        this.loading = false;
+      }
       // Lọc học kỳ
       let timeNow = new Date();
       let month = timeNow.getMonth() + 1;

@@ -1,5 +1,5 @@
 <template>
-  <div id="student-management">
+  <div id="student-management" v-if="loading == false">
     <div class="header">
       <div class="left">
         <span class="label">Tìm kiếm: </span>
@@ -222,6 +222,7 @@ import apiStudent from "@/api/student.js";
 export default {
   data() {
     return {
+      loading: true,
       dataTables: [],
       titles: [
         {
@@ -302,7 +303,7 @@ export default {
               type: "success"
             });
             this.dataTables.forEach((value, index) => {
-              if (value.id === res.data.data.id) {
+              if (value.id == res.data.data.id) {
                 this.$set(this.dataTables, index, res.data.data);
                 return true;
               }
@@ -376,7 +377,7 @@ export default {
         });
     },
     formatter(row, column) {
-      if (column.property === "sex") {
+      if (column.property == "sex") {
         if (row.sex == 0) {
           return "Nam";
         } else {
@@ -403,8 +404,10 @@ export default {
       return dataFilter.filter(data => {
         for (let key in data) {
           if (
+            key != "created_at" &&
+            key != "updated_at" &&
             (data[key] + "").toLowerCase().indexOf(this.search.toLowerCase()) !=
-            -1
+              -1
           ) {
             return true;
           }
@@ -414,7 +417,7 @@ export default {
     }
   },
   // async beforeCreate() {
-  //   if (this.$store.state.USER.dataUser.role === "admin") {
+  //   if (this.$store.state.USER.dataUser.role == "admin") {
   //     this.$router.options.nprogress.set(0.7);
   //     await apiStudent
   //       .getAllStudent(localStorage.getItem("token_user"))
@@ -426,7 +429,7 @@ export default {
   //     // Trường hợp load lại trang
   //     this.$store.dispatch("checkLogin").then(res => {
   //       this.$router.options.nprogress.set(0.7);
-  //       if (res.role === "admin") {
+  //       if (res.role == "admin") {
   //         apiStudent
   //           .getAllStudent(localStorage.getItem("token_user"))
   //           .then(res => {
@@ -446,6 +449,7 @@ export default {
       .then(res => {
         this.$set(this, "dataTables", res.data);
       });
+    this.loading = false;
     this.$router.options.nprogress.done();
   }
 };

@@ -1,10 +1,6 @@
 <!--suppress JSUnusedGlobalSymbols -->
 <template>
-  <div
-    id="subject"
-    :class="{ 'display-grid-card': $store.state.SUBJECT.subjects.length > 0 }"
-  >
-    <loading z-index="1500" :loading="loading" />
+  <div id="subject" class="list-card" v-if="loading == false">
     <h2 v-if="dataSubject().length < 1">
       Chưa có lớp học nào
     </h2>
@@ -14,8 +10,9 @@
       :to="{ name: 'ListClassSubject', params: { subjectId: subject.id } }"
       custom
       v-slot="{ navigate, href }"
+      v-else
     >
-      <a :href="href" @click="navigate">
+      <a :href="href" @click="navigate" class="card-item">
         <card-subject :dataSubject="subject" />
       </a>
     </router-link>
@@ -36,7 +33,6 @@
 
 <script>
 import CardSubject from "@/components/template/card_subject.vue";
-import Loading from "@/components/template/loading";
 
 export default {
   data: function() {
@@ -61,25 +57,26 @@ export default {
     }
   },
   components: {
-    Loading,
     CardSubject
   },
-  async beforeCreate() {
+  async created() {
     document.title = "Danh sách môn học";
     this.$router.options.nprogress.set(0.7);
-    await this.$store
-      .dispatch("apiGetSubjectByUserId", localStorage.getItem("token_user"))
-      .then(res => {
-        this.$store.commit("setDataSubject", res.data);
-      })
-      .catch(() => {
-        this.$message.error("Không thể gửi yêu cầu đến máy chủ");
-      });
-    this.$store.commit("setSubjectId", null);
+    // nếu chưa có data thì gửi request
+    if (Object.keys(this.$store.getters.getSubjects).length == 0) {
+      await this.$store
+        .dispatch("apiGetSubjectByUserId", localStorage.getItem("token_user"))
+        .then(res => {
+          this.$store.commit("setDataSubject", res.data);
+        })
+        .catch(() => {
+          this.$message.error("Không thể gửi yêu cầu đến máy chủ");
+        });
+    }
+    // this.$store.commit("setSubjectId", null);
     this.$router.options.nprogress.done();
     this.loading = false;
-  },
-  created() {
+
     let timeNow = new Date();
     let month = timeNow.getMonth() + 1;
     if (month > 8 && month < 2) {
@@ -94,9 +91,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-a {
+.card-item {
   text-decoration: none;
   color: #000;
+  margin-bottom: 20px;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .filter-class {

@@ -57,7 +57,10 @@
                     class="item"
                     :class="isExactActive && 'active'"
                     @click="navigate"
-                    v-if="isGroupLeader || $store.getters.getUserRole"
+                    v-if="
+                      $store.state.CLASSSUBJECTDETAILS.group.isGroupLeader ||
+                        $store.getters.getUserRole
+                    "
                   >
                     Phê duyệt
                   </li>
@@ -84,51 +87,77 @@
       </div>
     </div>
     <div class="group-body" style="margin-top: 30px">
-      <router-view
-        :isJoinGroup="isJoinGroup"
-        :myGroup="myGroup"
-        :isGroupLeader="isGroupLeader"
-      />
+      <transition name="slide-left" mode="out-in" appear>
+        <router-view
+          :isJoinGroup="$store.state.CLASSSUBJECTDETAILS.group.isJoinGroup"
+          :isGroupLeader="$store.state.CLASSSUBJECTDETAILS.group.isGroupLeader"
+        />
+      </transition>
     </div>
   </div>
 </template>
 
 <script>
 import apiGroup from "@/api/group.js";
+
 export default {
   props: {
     roomId: {
       required: true
     }
   },
-  data() {
-    return {
-      isJoinGroup: false,
-      myGroup: {},
-      isGroupLeader: false
-    };
+  methods: {
+    createGroup(data) {
+      this.$store.commit("createGroup", data);
+    },
+    updateNotify(e) {
+      this.$store.commit("updateGroupNotify", e);
+    },
+    deleteNotify(index) {
+      this.$store.commit("deleteGroupNotify", index);
+    },
+    updateNotifyReply(event) {
+      this.$store.commit("updateGroupNotifyReply", event);
+    },
+    deleteNotifyReply(event) {
+      this.$store.commit("deleteGroupNotifyReply", event);
+    },
+    deleteMyGroup() {
+      this.$store.commit("deleteMyGroup");
+    },
+    updateMyGroup(data) {
+      this.$store.commit("updateMyGroup", data);
+    },
+    seeGroupDetails(data) {
+      this.$store.commit("setDataMyGroup", data);
+    }
   },
   async created() {
     let token = localStorage.getItem("token_user");
     if (token) {
-      await apiGroup.getMyGroup(token, this.roomId).then(res => {
-        if (Object.keys(res.data).length === 0) {
-          this.isJoinGroup = false;
-          this.isGroupLeader = false;
-          this.myGroup = {};
-        } else {
-          this.isJoinGroup = true;
-          this.myGroup = res.data;
-          this.myGroup.members.forEach(member => {
-            if (
-              member.id == this.$store.getters.getUserId &&
-              member.role == 1
-            ) {
-              this.isGroupLeader = true;
-            }
-          });
-        }
-      });
+      if (
+        !this.$store.getters.getUserRole &&
+        Object.keys(this.$store.getters.getMyGroup).length == 0
+      ) {
+        await apiGroup.getMyGroup(token, this.roomId).then(res => {
+          if (Object.keys(res.data).length == 0) {
+            this.$store.commit("deleteMyGroup");
+          } else {
+            this.$store.commit("setDataMyGroup", {
+              data: res.data,
+              isJoinGroup: true
+            });
+            this.$store.getters.getMyGroup.members.forEach(member => {
+              if (
+                member.id == this.$store.getters.getUserId &&
+                member.role == 1
+              ) {
+                this.$store.state.CLASSSUBJECTDETAILS.group.isGroupLeader = true;
+              }
+            });
+          }
+        });
+      }
     }
     document.title = "Nhóm lớp";
     if (this.$store.getters.getClassDetails.name) {
@@ -144,11 +173,14 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  overflow-x: auto;
   .list-menu {
     list-style: none;
     display: flex;
     align-items: center;
+    background-color: #ffffff;
     .item {
+      width: max-content;
       padding: 12px 16px;
       font-size: 14px;
       font-weight: 600;
@@ -176,5 +208,10 @@ export default {
 
 .create-user-body {
   margin-top: 32px;
+}
+@media (max-width: 739px) {
+  .form-navbar {
+    justify-content: flex-start;
+  }
 }
 </style>

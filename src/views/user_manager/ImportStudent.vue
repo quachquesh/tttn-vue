@@ -16,7 +16,7 @@
               :style="{
                 width: progressRatio + '%',
                 backgroundColor:
-                  progressRatio === 100
+                  progressRatio == 100
                     ? 'var(--color-success)'
                     : 'var(--color-primary)'
               }"
@@ -84,9 +84,9 @@
           v-for="(value, index) in filterDataTable()"
           :key="index"
           :class="{
-            fail: value['status'] === 0,
-            success: value['status'] === 1,
-            duplicate: value['status'] === 2
+            fail: value['status'] == 0,
+            success: value['status'] == 1,
+            duplicate: value['status'] == 2
           }"
         >
           <td>{{ index + 1 }}</td>
@@ -131,11 +131,11 @@ export default {
         return this.dataTable;
       }
       return this.dataTable.filter(x => {
-        if (this.statusFilter.fail && x.status === 0) {
+        if (this.statusFilter.fail && x.status == 0) {
           return true;
-        } else if (this.statusFilter.success && x.status === 1) {
+        } else if (this.statusFilter.success && x.status == 1) {
           return true;
-        } else if (this.statusFilter.duplicate && x.status === 2) {
+        } else if (this.statusFilter.duplicate && x.status == 2) {
           return true;
         }
         return false;
@@ -143,7 +143,7 @@ export default {
     },
     exportFile() {
       let fileName = document.getElementById("export-file-name");
-      if (fileName.value === "") {
+      if (fileName.value == "") {
         this.$customjs.showToast({
           title: "Lỗi",
           message: "Chưa nhập tên file export",
@@ -187,7 +187,7 @@ export default {
       let file;
       let files = evt.target.files;
 
-      if (!files || files.length === 0) return;
+      if (!files || files.length == 0) return;
 
       file = files[0];
 
@@ -224,7 +224,7 @@ export default {
         for (let key in this.tableHeader) {
           jsonHeader.forEach((value, index) => {
             this.tableHeader[key].forEach(tblValue => {
-              if (value.toLowerCase() === (tblValue + "").toLowerCase()) {
+              if (value.toLowerCase() == (tblValue + "").toLowerCase()) {
                 this.tableHeader[key][0] = index;
               }
             });
@@ -234,8 +234,8 @@ export default {
         let flag_check = false;
         for (let key in this.tableHeader) {
           if (
-            this.tableHeader[key][0] === null &&
-            this.tableHeader[key][1] === true
+            this.tableHeader[key][0] == null &&
+            this.tableHeader[key][1] == true
           ) {
             document
               .querySelector("table tr th." + key)
@@ -247,7 +247,7 @@ export default {
               .classList.remove("danger");
           }
         }
-        if (flag_check === true) {
+        if (flag_check == true) {
           this.$customjs.showToast({
             title: "Thiếu dữ liệu",
             message: "Vui lòng check đủ các cột dữ liệu",
@@ -283,7 +283,7 @@ export default {
               this.$set(this.tableHeader, "password_random", [true, false]);
             }
             this.dataTable.forEach(value => {
-              if (value["status"] === true) {
+              if (value["status"] == true) {
                 currentTotal++;
               }
               this.progressRatio = ((currentTotal / total) * 100).toFixed(2);

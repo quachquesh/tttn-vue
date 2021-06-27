@@ -1,8 +1,11 @@
 <template>
   <div>
-    <div class="grid wide">
+    <div
+      class="grid wide"
+      style="background-color: #ffffff; border-radius: 5px; padding: 0 16px;"
+    >
       <div class="row">
-        <div class="col c-12 lecturer-group">
+        <div class="c-12 lecturer-group">
           <div class="header">
             <h2>Giảng viên</h2>
           </div>
@@ -21,7 +24,7 @@
         </div>
       </div>
       <div class="row">
-        <div class="col c-12 student-group">
+        <div class="c-12 student-group">
           <div class="header">
             <h2>Sinh viên</h2>
             <span class="add-student">
@@ -277,9 +280,9 @@
                 v-for="(value, index) in filterDataImport()"
                 :key="index"
                 :class="{
-                  fail: value['status'] === 0,
-                  success: value['status'] === 1,
-                  duplicate: value['status'] === 2
+                  fail: value['status'] == 0,
+                  success: value['status'] == 1,
+                  duplicate: value['status'] == 2
                 }"
               >
                 <td>{{ index + 1 }}</td>
@@ -464,7 +467,7 @@ export default {
         this.listMemberChecked.push(member);
       } else {
         this.listMemberChecked.forEach((memb, index) => {
-          if (memb.member_id === member.member_id) {
+          if (memb.member_id == member.member_id) {
             this.listMemberChecked.splice(index, 1);
             return true;
           }
@@ -516,7 +519,7 @@ export default {
           this.roomId
         )
         .then(res => {
-          let listSuccess = res.data.filter(x => x.status === 1);
+          let listSuccess = res.data.filter(x => x.status == 1);
           if (listSuccess.length > 0) {
             this.$store.commit("addNewMember", listSuccess);
             this.$message.success("Thêm thành viên thành công");
@@ -555,7 +558,7 @@ export default {
       let file;
       let files = evt.target.files;
 
-      if (!files || files.length === 0) return;
+      if (!files || files.length == 0) return;
 
       file = files[0];
 
@@ -585,7 +588,7 @@ export default {
         let checkMSSV = false;
         let keyMSSV = "mssv";
         for (const key in json[0]) {
-          if (key.toLowerCase() === keyMSSV) {
+          if (key.toLowerCase() == keyMSSV) {
             keyMSSV = key;
             checkMSSV = true;
           }
@@ -622,7 +625,7 @@ export default {
               return { mssv: v.mssv, status: v.status };
             })
           );
-          let listSuccess = res.data.filter(v => v.status === 1);
+          let listSuccess = res.data.filter(v => v.status == 1);
           this.$store.commit("addNewMember", listSuccess);
           this.$message.success("Thêm thành viên thành công");
         })
@@ -633,11 +636,11 @@ export default {
         return this.dataImport;
       }
       return this.dataImport.filter(x => {
-        if (this.statusFilter.fail && x.status === 0) {
+        if (this.statusFilter.fail && x.status == 0) {
           return true;
-        } else if (this.statusFilter.success && x.status === 1) {
+        } else if (this.statusFilter.success && x.status == 1) {
           return true;
-        } else if (this.statusFilter.duplicate && x.status === 2) {
+        } else if (this.statusFilter.duplicate && x.status == 2) {
           return true;
         }
         return false;
@@ -705,7 +708,7 @@ function sortMember(listSort, type, sortType) {
       color: var(--color-primary);
     }
     border-bottom: 1px solid var(--color-primary);
-    padding: 18px;
+    padding: 18px 30px;
   }
   .list-lecturers {
     list-style: none;
@@ -714,7 +717,7 @@ function sortMember(listSort, type, sortType) {
       display: flex;
       // justify-content: center;
       align-items: center;
-      padding: 8px 0;
+      padding: 8px 12px;
       .avt {
         margin: 0 16px;
         img {
@@ -739,6 +742,8 @@ function sortMember(listSort, type, sortType) {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    border-bottom: 1px solid var(--color-primary);
+    padding: 12px 18px 12px 30px;
     h2 {
       font-weight: 400;
       font-size: 30px;
@@ -760,16 +765,16 @@ function sortMember(listSort, type, sortType) {
         margin-left: 10px;
       }
     }
-    border-bottom: 1px solid var(--color-primary);
-    padding: 18px;
   }
   .list-students {
     list-style: none;
+    padding-top: 8px;
+    padding-bottom: 16px;
     .item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 0;
+      padding: 12px 18px;
       &.first {
         .select-option {
           position: relative;

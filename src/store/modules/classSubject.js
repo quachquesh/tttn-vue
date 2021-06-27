@@ -4,7 +4,7 @@ import apiClassSubject from "@/api/classSubject";
 const state = {
   subjectId: null, // id môn học hiện tại
   classSubjects: [], // Các lớp hiện tại của môn học
-  myClassSubjects: [] // Các môn user quản lý
+  myClassSubjects: [] // Các môn user quản lý, quản lý môn học
 };
 const getters = {
   getClassSubject(state) {

@@ -7,7 +7,7 @@
 <script>
 export default {
   created() {
-    if (this.$store.state.USER.dataUser.role === "admin") {
+    if (this.$store.state.USER.dataUser.role == "admin") {
       this.$router.options.nprogress.done();
     }
   }

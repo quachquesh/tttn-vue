@@ -160,7 +160,7 @@ export default {
       }
     },
     async createUser() {
-      if (this.dataLecturer.phone_number === "") {
+      if (this.dataLecturer.phone_number == "") {
         this.$delete(this.dataLecturer, "phone_number");
       }
       apiLecturer
@@ -208,7 +208,7 @@ export default {
     }
   },
   async beforeCreate() {
-    if (this.$store.state.USER.dataUser.role === "admin") {
+    if (this.$store.state.USER.dataUser.role == "admin") {
       this.$router.options.nprogress.set(0.7);
       // Xử lý cái gì đó
       this.$router.options.nprogress.done();
@@ -216,7 +216,7 @@ export default {
       // Trường hợp load lại trang
       this.$store.dispatch("checkLogin").then(res => {
         this.$router.options.nprogress.set(0.7);
-        if (res.role === "admin") {
+        if (res.role == "admin") {
           apiStudent
             .getAllStudent(localStorage.getItem("token_user"))
             .then(res => {

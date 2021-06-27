@@ -1,6 +1,5 @@
 <template>
-  <div id="class-subject-manager">
-    <loading :z-index="1500" :loading="loading" />
+  <div id="class-subject-manager" v-if="loading == false">
     <div class="header">
       <div class="left">
         <span class="label">Tìm kiếm: </span>
@@ -206,8 +205,6 @@
 </template>
 
 <script>
-import Loading from "@/components/template/loading";
-
 export default {
   data() {
     return {
@@ -345,19 +342,20 @@ export default {
       }
     }
   },
-  components: {
-    Loading
-  },
   async created() {
     let token = localStorage.getItem("token_user");
     if (token) {
-      await this.$store
-        .dispatch("apiGetMyClassSubject", token)
-        .then(res => {
-          this.$store.commit("setDataMyClassSubject", res.data);
-          this.loading = false;
-        })
-        .catch(() => this.$message.error("Lỗi kết nối"));
+      if (Object.keys(this.$store.getters.getMyClassSubjects).length == 0) {
+        await this.$store
+          .dispatch("apiGetMyClassSubject", token)
+          .then(res => {
+            this.$store.commit("setDataMyClassSubject", res.data);
+            this.loading = false;
+          })
+          .catch(() => this.$message.error("Lỗi kết nối"));
+      } else {
+        this.loading = false;
+      }
 
       // check tất cả năm học
       let arrOption = [];

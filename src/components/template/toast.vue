@@ -53,7 +53,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width: 200px;
+  width: 230px;
   margin: 10px 0px;
   cursor: pointer;
   padding: 8px 0px;
@@ -64,7 +64,7 @@ export default {
     box-shadow: 0px 0px 3px rgba(#000, 0.5), 0px 0px 10px rgba(#000, 0.5);
   }
   &.fadeOut {
-    animation: toastFadeOut linear 0.3s;
+    animation: toastFadeOut linear 0.4s;
   }
   &.success {
     background-color: rgba(#00b74a, 0.7);
@@ -105,6 +105,7 @@ export default {
   }
   .right {
     flex: 1;
+    padding: 3px 0;
     .toast-title {
       font-weight: 500;
       font-size: 14px;
@@ -113,6 +114,7 @@ export default {
       font-weight: 400;
       font-size: 13px;
       margin-top: 3px;
+      padding-right: 10px;
     }
   }
 }
